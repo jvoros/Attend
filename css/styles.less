@@ -1,0 +1,27 @@
+@import 'normalize.less';
+@import 'elements.less';
+
+// fix box model
+* { margin: 0; padding: 0 }
+*, *:after, *:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+
+// COLORS / TYPOGRAPHY / MIXINS 
+// Colors
+@back:          white; 
+@high:          #E3242A; 
+@linkhigh:      #3FA9F5; 
+@dark:          rgb(46,54,57);
+@light:         white;
+@gray:          #a4a4a4;
+@lgray:         rgb(231,231,231); 
+
+// Type
+.sans       { font-family: 'Titillium Web', sans-serif; }
+.sans-alt   { font-family: 'Open Sans', sans-serif; }
+.serif      { font-family: 'Droid Serif', serif; font-weight: normal; }
+

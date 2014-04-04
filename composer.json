@@ -1,0 +1,15 @@
+{
+    "name": "Attend/alpha",
+    "require": {
+        "slim/slim": "2.*",
+        "slim/views": "dev-master",
+        "twig/twig": "1.*",
+        "opauth/opauth": "*",
+        "opauth/facebook": "*",
+        "opauth/google": "*",
+        "opauth/twitter": "*"
+    },
+    "autoload": {
+        "classmap": ["vendor/redbean/", "vendor/attend/"]
+    }
+}
