@@ -79,8 +79,6 @@ $app->get('/', $auth->protect(), function() use($app) {
         $_SESSION['checkin'] = $checkin->export();
     }
     
-    
-    
     $app->render('home.html', array('conf' => $conf));
     // if conference day, display checkin/out buttons
     

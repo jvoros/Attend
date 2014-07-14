@@ -2,14 +2,25 @@
 
 {% block main %}
 
+<style>
+    #checkin-button   { display: none; }
+    #checkout-button  { display: none; }
+    #not-here         { display: none; }    
+
+</style>
+
+<!--MAP -->
 <div id="map-canvas" style="height: 300px"></div>
 
+<!--CHECKIN/OUT-->
 <div class="uk-panel uk-panel-box">
 {% if conf != 'none' %}     
     <h2>{{ conf.day }}<br />Conference</h2>
     <p>at {{ conf.location }}</p>
-    <div id="check-buttons">
+    <div id="checkin-button">
         <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large" href="{{ base_url }}/checkin">Check In</a></p>
+    </div>
+    <div id="checkout-button">
         <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large" href="{{ base_url }}/checkout">Check Out</a></p>
     </div>
     <div id="not-here">
@@ -22,47 +33,39 @@
 
 <br />
 
+<!--ATTENDANCE-->
 <div class="uk-panel uk-panel-box">
     <a class="uk-width-1-1 uk-button uk-button-primary uk-button-large" href="{{ base_url }}/checkout/{{ code }}">Attendance Report</a>
 </div>
 
+<!--LOGOUT-->
 <br />
 
 <a href="{{ base_url }}/logout">Logout</a>
 
-
+<!--JAVASCRIPT-->
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
 <script type="text/javascript">
     
-
-    var r = "{{ conf.r_coords }}".split(",");
-
-    var remoteCoords = [
-        new google.maps.LatLng(r[0], r[1]),
-        new google.maps.LatLng(r[2], r[3]),
-        new google.maps.LatLng(r[4], r[5]),
-        new google.maps.LatLng(r[6], r[7])
-    ]; 
-
-    var remotePoly = new google.maps.Polygon({
-        paths: remoteCoords
-    });
-
-    var l = "{{ conf.coords }}".split(",");
-    
-    var locationCoords = [
-        new google.maps.LatLng(l[0], l[1]),
-        new google.maps.LatLng(l[2], l[3]),
-        new google.maps.LatLng(l[4], l[5]),
-        new google.maps.LatLng(l[6], l[7])
-    ]; 
-    
-    var locationPoly = new google.maps.Polygon({
-        paths:locationCoords
-    });
-    
+    // utility function to turn string of four coordinates (comma separated) into google maps polygon
+    function coordsPoly(x_string) {
+        var r = x_string.split(",");
+        var coords = [
+            new google.maps.LatLng(r[0], r[1]),
+            new google.maps.LatLng(r[2], r[3]),
+            new google.maps.LatLng(r[4], r[5]),
+            new google.maps.LatLng(r[6], r[7])
+        ]; 
+        var poly = new google.maps.Polygon({
+            paths: coords
+        });
+        return poly;
+    };
+        
+    // success callback after geolocation obtained
     function initialize(p) { 
-                   
+        
+        // google maps point for users location
         var myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
         
         var mapOptions = {
@@ -70,38 +73,59 @@
           zoom: 16
         };
         
+        // load map into #map-canvas
         var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
         
         var marker = new google.maps.Marker({
             position: myLoc, 
             map: map,
         });
-                
+        
+        // put primary and remote locations on map
         locationPoly.setMap(map);
         remotePoly.setMap(map);
         
-        var locFlag;
+       // flag if user at primary or remote location
+        var locFlag = 0;
         
-        if(google.maps.geometry.poly.containsLocation(myLoc, locationPoly) || google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
-            locFlag = 1; // here, at location
+        if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
+            console.log("At primary location");
+            locFlag = 1;
+        } else if (google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
+            console.log("At remote location");
+            locFlag = 2;
         } else { 
-            locFlag = 0; // not here
+            console.log("Not at location");
+            locFlag = 0;
         };
         
-      }
-
-    $(window).load(function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(initialize);            
-        } else {
-            $('#map-canvas').html("Geolocation not supported");
+        // at primary or remote location
+        if (locFlag === 1 || 2) { 
+            $("#checkin-button").show();
         }
         
+        // at other location
+        if (locFlag == 0) {}
         
+    }
 
+    // ON PAGE LOAD: check for geolocation
 
+    if (navigator.geolocation) {
+       
+        // google maps polys for location and remote
+        // for some reason, must be defined outside initialization funciton or null result ???
+        var locationPoly = coordsPoly("{{ conf.coords }}");
+        var remotePoly = coordsPoly("{{ conf.r_coords }}");
         
-    });
+        // get current position, pass in success callback function that takes location as parameter
+        // intialize function contains all DOM manipulation after location obtained
+        navigator.geolocation.getCurrentPosition(initialize);             
+    
+    } else {
+        $('#map-canvas').html("Geolocation not supported");
+    }    
+
 </script>
 
 {% endblock %}
