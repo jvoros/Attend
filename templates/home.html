@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<div id="map-canvas" style="height: 300px"></div>
+
+<div class="uk-panel uk-panel-box">
+{% if conf != 'none' %}     
+    <h2>{{ conf.day }}<br />Conference</h2>
+    <p>at {{ conf.location }}</p>
+    <div id="check-buttons">
+        <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large" href="{{ base_url }}/checkin">Check In</a></p>
+        <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large" href="{{ base_url }}/checkout">Check Out</a></p>
+    </div>
+    <div id="not-here">
+        <p>You must be at the conference or remote location in order to check in.</p>
+    </div>
+{% else %}
+    <p><b>There is no conference today.</b></p>
+{% endif %}
+</div>
+
+<br />
+
+<div class="uk-panel uk-panel-box">
+    <a class="uk-width-1-1 uk-button uk-button-primary uk-button-large" href="{{ base_url }}/checkout/{{ code }}">Attendance Report</a>
+</div>
+
+<br />
+
+<a href="{{ base_url }}/logout">Logout</a>
+
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
+<script type="text/javascript">
+    
+
+    var r = "{{ conf.r_coords }}".split(",");
+
+    var remoteCoords = [
+        new google.maps.LatLng(r[0], r[1]),
+        new google.maps.LatLng(r[2], r[3]),
+        new google.maps.LatLng(r[4], r[5]),
+        new google.maps.LatLng(r[6], r[7])
+    ]; 
+
+    var remotePoly = new google.maps.Polygon({
+        paths: remoteCoords
+    });
+
+    var l = "{{ conf.coords }}".split(",");
+    
+    var locationCoords = [
+        new google.maps.LatLng(l[0], l[1]),
+        new google.maps.LatLng(l[2], l[3]),
+        new google.maps.LatLng(l[4], l[5]),
+        new google.maps.LatLng(l[6], l[7])
+    ]; 
+    
+    var locationPoly = new google.maps.Polygon({
+        paths:locationCoords
+    });
+    
+    function initialize(p) { 
+                   
+        var myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+        
+        var mapOptions = {
+          center: myLoc,
+          zoom: 16
+        };
+        
+        var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+        
+        var marker = new google.maps.Marker({
+            position: myLoc, 
+            map: map,
+        });
+                
+        locationPoly.setMap(map);
+        remotePoly.setMap(map);
+        
+        var locFlag;
+        
+        if(google.maps.geometry.poly.containsLocation(myLoc, locationPoly) || google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
+            locFlag = 1; // here, at location
+        } else { 
+            locFlag = 0; // not here
+        };
+        
+      }
+
+    $(window).load(function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(initialize);            
+        } else {
+            $('#map-canvas').html("Geolocation not supported");
+        }
+        
+        
+
+
+        
+    });
+</script>
+
+{% endblock %}

@@ -9,5 +9,5 @@ return array(
     'Twig_' => array($vendorDir . '/twig/twig/lib'),
     'Slim\\Views' => array($vendorDir . '/slim/views'),
     'Slim' => array($vendorDir . '/slim/slim'),
-    '' => array($vendorDir . '/opauth/facebook', $vendorDir . '/opauth/google', $vendorDir . '/opauth/twitter'),
+    '' => array($vendorDir . '/opauth/google'),
 );

@@ -3,52 +3,8 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "881a43d53d8f14ecfbb9dc8542250215",
+    "hash": "3512515d673235781c47ca8836bb3207",
     "packages": [
-        {
-            "name": "opauth/facebook",
-            "version": "0.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/opauth/facebook.git",
-                "reference": "28c0e53393a03a66cbfea03073d1d6aacfaddb69"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/opauth/facebook/zipball/28c0e53393a03a66cbfea03073d1d6aacfaddb69",
-                "reference": "28c0e53393a03a66cbfea03073d1d6aacfaddb69",
-                "shasum": ""
-            },
-            "require": {
-                "opauth/opauth": ">=0.2.0",
-                "php": ">=5.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "U-Zyn Chua",
-                    "email": "chua@uzyn.com",
-                    "homepage": "http://uzyn.com"
-                }
-            ],
-            "description": "Facebook strategy for Opauth",
-            "homepage": "http://opauth.org",
-            "keywords": [
-                "Authentication",
-                "auth",
-                "facebook"
-            ],
-            "time": "2012-09-21 04:47:35"
-        },
         {
             "name": "opauth/google",
             "version": "0.2.2",
@@ -147,61 +103,17 @@
             "time": "2013-05-10 09:01:52"
         },
         {
-            "name": "opauth/twitter",
-            "version": "0.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/opauth/twitter.git",
-                "reference": "24792d512ccc67e7d11e9249737616f039551c11"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/opauth/twitter/zipball/24792d512ccc67e7d11e9249737616f039551c11",
-                "reference": "24792d512ccc67e7d11e9249737616f039551c11",
-                "shasum": ""
-            },
-            "require": {
-                "opauth/opauth": ">=0.2.0",
-                "php": ">=5.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "U-Zyn Chua",
-                    "email": "chua@uzyn.com",
-                    "homepage": "http://uzyn.com"
-                }
-            ],
-            "description": "Twitter strategy for Opauth",
-            "homepage": "http://opauth.org",
-            "keywords": [
-                "Authentication",
-                "auth",
-                "twitter"
-            ],
-            "time": "2013-06-12 07:50:11"
-        },
-        {
             "name": "slim/slim",
-            "version": "2.4.2",
+            "version": "2.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/codeguy/Slim.git",
-                "reference": "3a2ac723f17b5d81607287ff28575d38b9fbc70e"
+                "reference": "4906b77a07c7bd6ff1a99aea903e940a2d4fa106"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codeguy/Slim/zipball/3a2ac723f17b5d81607287ff28575d38b9fbc70e",
-                "reference": "3a2ac723f17b5d81607287ff28575d38b9fbc70e",
+                "url": "https://api.github.com/repos/codeguy/Slim/zipball/4906b77a07c7bd6ff1a99aea903e940a2d4fa106",
+                "reference": "4906b77a07c7bd6ff1a99aea903e940a2d4fa106",
                 "shasum": ""
             },
             "require": {
@@ -234,7 +146,7 @@
                 "rest",
                 "router"
             ],
-            "time": "2014-02-16 18:18:25"
+            "time": "2014-04-05 18:33:59"
         },
         {
             "name": "slim/views",

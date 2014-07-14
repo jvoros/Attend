@@ -13,12 +13,12 @@ $config = array(
  *  - eg. if Opauth is reached via http://example.org/auth/, path is '/auth/'
  *  - if Opauth is reached via http://auth.example.org/, path is '/'
  */
-	'path' => '/Sites/Attend/auth/login/',
+	'path' => '/Sites/DHREM/Attend/auth/login/',
 
 /**
  * Callback URL: redirected to after authentication, successful or otherwise
  */
-	'callback_url' => 'http://localhost/Sites/Attend/auth/response',
+	'callback_url' => 'http://localhost/Sites/DHREM/Attend/auth/response',
     
     'callback_transport' => 'post',
 	
@@ -44,19 +44,9 @@ $config = array(
  */
 	'Strategy' => array(
 		// Define strategies and their respective configs here
-		'Twitter' => array(
-	       'key' => 'Ar0pbuAWuezCJ3TCRaaIgg',
-	       'secret' => 'PE39hDoIFHuAMqShxrATpoC8PmDgCLQkipJdsyfvYuY'  
-        ),
-        
         'Google' => array(
-	       'client_id' => '923529728247.apps.googleusercontent.com',
-	       'client_secret' => 'lLDpTx_qCnq8wE5ZRZaDKglK'
-        ),
-        
-        'Facebook' => array(
-           'app_id' => '444408008997389',
-           'app_secret' => '50acc8eb54ce3843502bb434a65bc733'
-       )
+	       'client_id' => '459801839286-j103ceme00kacpbrk19nihn7r3l2icme.apps.googleusercontent.com',
+	       'client_secret' => 'C95vXMePXkVXKgtuQr8lWCqk'
+        )
 	),
 );

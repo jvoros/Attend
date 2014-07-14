@@ -5,9 +5,7 @@
         "slim/views": "dev-master",
         "twig/twig": "1.*",
         "opauth/opauth": "*",
-        "opauth/facebook": "*",
-        "opauth/google": "*",
-        "opauth/twitter": "*"
+        "opauth/google": "*"
     },
     "autoload": {
         "classmap": ["vendor/redbean/", "vendor/attend/"]

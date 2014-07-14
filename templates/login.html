@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+{% if flash.error is defined %}
+<p>Error: {{ flash.error }}</p>
+<iframe id="logoutframe" src="https://accounts.google.com/logout" style="display: none"></iframe>
+{% endif %}
+
+<div class="uk-panel uk-panel-box">
+    <a class="uk-width-1-1 uk-button uk-button-primary uk-button-large" href="{{ base_url }}/auth/login/google">Login via Google</a>
+</div>
+
+{% endblock %}

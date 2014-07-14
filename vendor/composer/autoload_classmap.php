@@ -6,6 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'AuthProtect' => $vendorDir . '/attend/AuthProtect.php',
+    'OauthResponse' => $vendorDir . '/attend/oauthresponse.php',
     'Opauth' => $vendorDir . '/opauth/opauth/lib/Opauth/Opauth.php',
     'OpauthStrategy' => $vendorDir . '/opauth/opauth/lib/Opauth/OpauthStrategy.php',
     'R' => $vendorDir . '/redbean/redbean.php',
@@ -52,4 +54,5 @@ return array(
     'RedBean_SimpleModel' => $vendorDir . '/redbean/redbean.php',
     'RedBean_TagManager' => $vendorDir . '/redbean/redbean.php',
     'RedBean_ToolBox' => $vendorDir . '/redbean/redbean.php',
+    'to' => $vendorDir . '/attend/oauthresponse.php',
 );

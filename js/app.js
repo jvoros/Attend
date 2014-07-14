@@ -1,2 +1,2 @@
-var baseURL = 'http://localhost/Sites/Attend';
+var baseURL = 'http://localhost/Sites/DHREM/Attend';
 
