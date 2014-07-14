@@ -43,6 +43,39 @@ $app->view->parserExtensions = array(new \Slim\Views\TwigExtension(), new \Twig_
 // route middleware for authorization redirect
 $auth = new AuthProtect($app);
 
+
+// UTILITY FUNCTIONS
+
+// set session variable for today's conference
+function getConf() {
+    // check if today is a conference day, set session variable
+    $confer = R::findOne('conference', ' day = ? ', array(date("Y-m-d")));
+    if (empty($confer)) {
+        $conf = 'none';
+        return FALSE;
+    } else {
+        // get conference details
+        $conf = array();
+        $conf['id']         = $confer->id;
+        $conf['day']        = $confer->day;
+        $conf['location']   = $confer->location->name;
+        $conf['coords']     = $confer->location->coords;
+        $conf['remote']     = $confer->fetchAs('location')->remote->name;
+        $conf['r_coords']   = $confer->fetchAs('location')->remote->coords;
+    }
+    $_SESSION['conf']    = $conf;
+    return TRUE;
+}
+
+function checkedinStatus($user, $conf) {
+    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $user, ':conf' => $conf));
+    if (empty($checkinToday)) {
+        return FALSE;
+    } else {
+        return TRUE;
+    }
+}
+
 /*********************************
     ROUTES
 *********************************/
@@ -59,32 +92,66 @@ GET /report     attendance report
 */
 
 
+
+
+
+// HOME PAGE
 $app->get('/', $auth->protect(), function() use($app) {
-    // check if today is a conference day, set session variable
-    $confer = R::findOne('conference', ' day = ? ', array(date("Y-m-d")));
-    if (empty($confer)) {
-        $conf = 'none';
+    
+    $conf = getConf();
+    
+    if(isset($conf)) {
+        $app->render('home.html');
     } else {
-        // get conference details
-        $conf = array();
-        $conf['id']         = $confer->id;
-        $conf['day']        = $confer->day;
-        $conf['location']   = $confer->location->name;
-        $conf['coords']     = $confer->location->coords;
-        $conf['remote']     = $confer->fetchAs('location')->remote->name;
-        $conf['r_coords']   = $confer->fetchAs('location')->remote->coords;
-        
-        // get checkin details
-        $checkin = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $_SESSION['user']['id'], ':conf' => $conf['id']));
-        $_SESSION['checkin'] = $checkin->export();
+        $app->render('home-nomap.html');
     }
     
-    $app->render('home.html', array('conf' => $conf));
-    // if conference day, display checkin/out buttons
+});
+
+// TRIGGERED ON LOCATION VERIFICATION
+$app->post('/loc/:loc', function($loc) use($app) {
+    // log location in session
+    $_SESSION['user']['location'] = $loc;
     
-    // if not conference day, display notification
+    echo json_encode($loc);
+});
+
+
+// CHECKIN
+$app->post('/checkin', function() use($app) {
+    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $_SESSION['user']['id'], ':conf' => $_SESSION['conf']['id']));
+    if (empty($checkinToday)) {
+        $check                = R::dispense('checkin');
+        $check->user_id       = $_SESSION['user']['id'];
+        $check->conference_id = $_SESSION['conf']['id'];
+        $check->in            = date("Y-m-d H:i:s");
+        $check_id = R::store($check);
+        
+        $data['success'] = "success";
+        
+    } else {
+        $data['error'] = "You already checked in for today";
+    }
     
-    // display attendance report button
+    echo json_encode($data);   
+    
+});
+
+$app->post('/checkout', function() use($app) {
+    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $_SESSION['user']['id'], ':conf' => $_SESSION['conf']['id']));
+    if(empty($checkinToday->out)) {
+        
+        $checkinToday->out = date("Y-m-d H:i:s");
+        $check_id = R::store($checkinToday);
+        
+        $data['success'] = "Total hours were: ";
+        
+    } else {
+        $data['error'] = "You already checked out for today";
+    }
+    
+    echo json_encode($data); 
+       
 });
 
 
@@ -110,7 +177,7 @@ $app->get('/checkout', function() use($app) {
 */
 
 // AUTHORIZATION HANDLING
-// login, logout
+
 $app->get('/login', function() use($app) {
     $app->render('login.html');
 });
@@ -143,7 +210,7 @@ $app->post('/auth/response', function() use ($app) {
     unset($_SESSION['opauth']);
     
     // error handling
-    if (isset($user['error'])) {
+    if (isset($oar['error'])) {
         $app->flash('error', $oar['error']);
         $_SESSION['loggedin'] = FALSE;
         $app->response->redirect(BASE_URL . "/login", 303);
@@ -153,7 +220,6 @@ $app->post('/auth/response', function() use ($app) {
         $app->response->redirect(BASE_URL, 303);
     }
 });
-
 
 
 /*********************************

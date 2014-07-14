@@ -54,7 +54,13 @@ $conf->location     = $loc;
 $conf->remote       = $loc3;
 $conf_id = R::store($conf);
 
-echo "Created conference <br />";
+$conf2              = R::dispense('conference');
+$conf2->day         = "2014-07-14";
+$conf2->location    = $loc2;
+$conf2->remote      = $loc3;
+$conf2_id = R::store($conf2);
+
+echo "Created conferences <br />";
 
 // CHECK INS
 $check              = R::dispense('checkin');
