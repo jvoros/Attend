@@ -18,7 +18,7 @@
     <h2>{{ session.conf.day }}<br />Conference</h2>
     <p>at {{ session.conf.location }}</p>
     
-     <div id="checkin-button">
+    <div id="checkin-button">
         <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large">Check In</a></p>
     </div>
  
@@ -86,14 +86,19 @@
             });
         }
         
+        var checkin = {
+            status:"{{ session.user.checkin.status }}", 
+            id:"{{ session.user.checkin.id }}"
+        };
+        
         if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
             var l = postLocation("primary");
-            $('#checkin-button').show();
-            $('#checkout-button').show();
+            if (checkin.status == 'none') { $('#checkin-button').show(); }
+            if (checkin.status == 'in') { $('#checkout-button').show(); }
         } else if (google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
             var l = postLocation("remote");
-            $('#checkin-button').show();
-            $('#checkout-button').show();
+            if (checkin.status == 'none') { $('#checkin-button').show(); }
+            if (checkin.status == 'in') { $('#checkout-button').show(); }
         } else { 
             var l = postLocation("other");
             $('#not-here').show();

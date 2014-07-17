@@ -45,15 +45,13 @@ $auth = new AuthProtect($app);
 
 
 // UTILITY FUNCTIONS
-
-// set session variable for today's conference
-function getConf() {
-    // check if today is a conference day, set session variable
+function getConferenceDetails() {
     $confer = R::findOne('conference', ' day = ? ', array(date("Y-m-d")));
+    
     if (empty($confer)) {
         $conf = 'none';
-        return FALSE;
-    } else {
+    
+    } else {        
         // get conference details
         $conf = array();
         $conf['id']         = $confer->id;
@@ -63,56 +61,59 @@ function getConf() {
         $conf['remote']     = $confer->fetchAs('location')->remote->name;
         $conf['r_coords']   = $confer->fetchAs('location')->remote->coords;
     }
-    $_SESSION['conf']    = $conf;
-    return TRUE;
+    
+    return $conf;
 }
 
-function checkedinStatus($user, $conf) {
-    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $user, ':conf' => $conf));
+function getCheckinStatus($user, $conf) {
+    $checkinToday = R::findOne('checkin', 
+                               ' user_id = :user AND conference_id = :conf ', 
+                               array(':user' => $user, ':conf' => $conf));
+    
     if (empty($checkinToday)) {
-        return FALSE;
+        $checkin['status']  = 'none';
+        $checkin['id']      = FALSE;
+    } elseif (empty($checkinToday->out)){
+        $checkin['status']  = 'in';
+        $checkin['id']      = $checkinToday->id;
+        $checkin['in']      = $checkinToday->in;
     } else {
-        return TRUE;
+        $checkin['status']  = 'out';
+        $checkin['id']      = $checkinToday->id;
+        $checkin['in']      = $checkinToday->in;
+        $checkin['out']     = $checkinToday->out;
     }
+    
+    return $checkin;
 }
+
+
 
 /*********************************
     ROUTES
 *********************************/
 
-/*
-
-GET /           home page, checkin/out buttons appear on conference day, generate attendance report button
-GET /checkin    process checkin for conference
-GET /checkout   process checkout for conference
-GET /report     attendance report
-
-// ADMIN ROUTES
-
-*/
-
-
-
-
-
 // HOME PAGE
 $app->get('/', $auth->protect(), function() use($app) {
     
-    $conf = getConf();
+    // get conference dtails
+    $conf = getConferenceDetails();
+    $_SESSION['conf'] = $conf;
     
-    if(isset($conf)) {
-        $app->render('home.html');
-    } else {
-        $app->render('home-nomap.html');
+    // if conference day, get checkin status
+    if ($conf != 'none') {
+        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
     }
+    
+    // render
+    $app->render('home.html');
     
 });
 
-// TRIGGERED ON LOCATION VERIFICATION
+// SET LOCATION
 $app->post('/loc/:loc', function($loc) use($app) {
     // log location in session
     $_SESSION['user']['location'] = $loc;
-    
     echo json_encode($loc);
 });
 
