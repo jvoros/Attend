@@ -23,47 +23,10 @@ $app = new \Slim\Slim(array(
     'templates.path' => 'templates',
 ));
 
-// prepare Twig view
-$app->view(new \Slim\Views\Twig());
-$app->view->parserOptions = array(
-    'charset' => 'utf-8',
-    'cache' => realpath('../templates/cache'),
-    'auto_reload' => true,
-    'strict_variables' => false,
-    'autoescape' => true,
-    'debug' => true
-);
-
-// give Twig templates access to session variables, dump() function, Slim View Extras
-$app->view->getEnvironment()->addGlobal('session', $_SESSION);
-$app->view->getEnvironment()->addGlobal('base_url', BASE_URL);
-$app->view->getEnvironment()->addExtension(new \Twig_Extension_Debug());
-$app->view->parserExtensions = array(new \Slim\Views\TwigExtension(), new \Twig_Extension_Debug());
-
 // route middleware for authorization redirect
 $auth = new AuthProtect($app);
 
-
 // UTILITY FUNCTIONS
-function getConferenceDetails() {
-    $confer = R::findOne('conference', ' day = ? ', array(date("Y-m-d")));
-    
-    if (empty($confer)) {
-        $conf = 'none';
-    
-    } else {        
-        // get conference details
-        $conf = array();
-        $conf['id']         = $confer->id;
-        $conf['day']        = $confer->day;
-        $conf['location']   = $confer->location->name;
-        $conf['coords']     = $confer->location->coords;
-        $conf['remote']     = $confer->fetchAs('location')->remote->name;
-        $conf['r_coords']   = $confer->fetchAs('location')->remote->coords;
-    }
-    
-    return $conf;
-}
 
 function getCheckinStatus($user, $conf) {
     $checkinToday = R::findOne('checkin', 
@@ -96,17 +59,33 @@ function getCheckinStatus($user, $conf) {
 // HOME PAGE
 $app->get('/', $auth->protect(), function() use($app) {
     
-//    // get conference dtails
-//    $conf = getConferenceDetails();
-//    $_SESSION['conf'] = $conf;
-//    
-//    // if conference day, get checkin status
-//    if ($conf != 'none') {
-//        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
-//    }
-//    
-//   // render
+    // get conference dtails
+    //$conf = getConferenceDetails();
+    $_SESSION['conf'] = $conf;
+    
+    // if conference day, get checkin status
+    if ($conf != 'none') {
+        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
+    }
+    
+   // render
     $app->render('main.html');
+    
+});
+
+// CONFERENCE ROUTES
+// GET conference BY date (Y-m-d)
+$app->get('/conferences/date/:date', $auth->protect(), function($date) use($app) {
+    
+    $conf = R::findOne('conference', ' day = ? ', array(date($date)));
+    if($conf) { 
+        R::preload($conf, array('location'=>'location', 'remote'=>'location'));
+        $data = $conf->export();
+    } else {
+        $data = null;
+    }
+        
+    echo json_encode($data, JSON_PRETTY_PRINT);    
     
 });
 
