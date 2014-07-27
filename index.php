@@ -96,17 +96,17 @@ function getCheckinStatus($user, $conf) {
 // HOME PAGE
 $app->get('/', $auth->protect(), function() use($app) {
     
-    // get conference dtails
-    $conf = getConferenceDetails();
-    $_SESSION['conf'] = $conf;
-    
-    // if conference day, get checkin status
-    if ($conf != 'none') {
-        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
-    }
-    
-    // render
-    $app->render('home.html');
+//    // get conference dtails
+//    $conf = getConferenceDetails();
+//    $_SESSION['conf'] = $conf;
+//    
+//    // if conference day, get checkin status
+//    if ($conf != 'none') {
+//        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
+//    }
+//    
+//   // render
+    $app->render('main.html');
     
 });
 
@@ -120,62 +120,49 @@ $app->post('/loc/:loc', function($loc) use($app) {
 
 // CHECKIN
 $app->post('/checkin', function() use($app) {
-    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $_SESSION['user']['id'], ':conf' => $_SESSION['conf']['id']));
-    if (empty($checkinToday)) {
+
+    // confirm no prior checkin, create new checkin
+    if(empty($_SESSION['checkin']['id'])) {
         $check                = R::dispense('checkin');
         $check->user_id       = $_SESSION['user']['id'];
         $check->conference_id = $_SESSION['conf']['id'];
         $check->in            = date("Y-m-d H:i:s");
         $check_id = R::store($check);
         
-        $data['success'] = "success";
-        
+        $data['status'] = 'success';
+        $data['msg'] = $check_id;
+    
     } else {
-        $data['error'] = "You already checked in for today";
+        $data['status'] = 'error';
+        $data['msg'] = 'You have already checked in for today';
     }
     
     echo json_encode($data);   
     
 });
 
+// CHECKOUT
 $app->post('/checkout', function() use($app) {
-    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', array(':user' => $_SESSION['user']['id'], ':conf' => $_SESSION['conf']['id']));
-    if(empty($checkinToday->out)) {
+    
+    // confirm prior checkin, add checkout time
+    if(isset($_SESSION['checkin']['id'])) {
+        $check = R::find('checkin', $_SESSION['checkin']['id']);
+        $check->out = date("Y-m-d H:i:s");
+        $check_id = R::store($check);
         
-        $checkinToday->out = date("Y-m-d H:i:s");
-        $check_id = R::store($checkinToday);
-        
-        $data['success'] = "Total hours were: ";
-        
+        $data['status'] = 'success';
+        $data['msg'] = 'Total Hours: ';
+    
     } else {
-        $data['error'] = "You already checked out for today";
+        $data['status'] = 'error';
+        $data['msg'] = "You haven't checked in today or you have already checked out.";
     }
     
-    echo json_encode($data); 
+    echo json_encode($data);
        
 });
 
 
-/*
-$app->get('/checkin', function() use($app) {
-    // protect route to require login
-    
-    // process checkin
-    
-    // display confirmation message, checkout button, logout button
-});
-
-
-$app->get('/checkout', function() use($app) {
-    // protect route to require login
-    
-    // process checkout
-    
-    // display confirmation message, attendance report button, logout button
-}):
-
-
-*/
 
 // AUTHORIZATION HANDLING
 

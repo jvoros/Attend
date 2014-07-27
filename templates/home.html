@@ -112,15 +112,9 @@
         var that = this;
         $.post('{{ base_url }}/checkin', function(data){
             console.log("checkin: "+data);
-            if (data.error) {
-                alert(data.error);
-                $(that).hide();
-            }
-            if (data.success) {
-                alert("Thank you for checking in!");
-                $(that).hide();
-            }
-            
+            $(that).hide();
+            $('#checkout-button').show();
+            $('#messages').html('Thank you for checking in.');
         }, 'json');
     });
     
@@ -161,6 +155,7 @@
         // for some reason, must be defined outside initialization funciton or null result ???
         var locationPoly = coordsPoly("{{ session.conf.coords }}");
         var remotePoly = coordsPoly("{{ session.conf.r_coords }}");
+        console.log('before initialize');
         
         // get current position, pass in success callback function that takes location as parameter
         // intialize function contains all DOM manipulation after location obtained
@@ -168,6 +163,7 @@
     
     } else {
         $('#map-canvas').html("Geolocation not supported");
+        console.log('after initialize');
     }    
 
 </script>
