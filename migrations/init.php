@@ -52,12 +52,14 @@ $conf               = R::dispense('conference');
 $conf->day          = "2014-06-14";
 $conf->location     = $loc;
 $conf->remote       = $loc3;
+$conf->duration     = 4;
 $conf_id = R::store($conf);
 
 $conf2              = R::dispense('conference');
-$conf2->day         = "2014-07-14";
+$conf2->day         = date('Y-m-d');
 $conf2->location    = $loc2;
 $conf2->remote      = $loc3;
+$conf2->duration    = 4;
 $conf2_id = R::store($conf2);
 
 echo "Created conferences <br />";

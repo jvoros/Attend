@@ -41,12 +41,14 @@
             <div class="uk-panel uk-panel-box">
                 <h2>{{ conf.day }}<br />Conference</h2>
                 <p>at {{ conf.location.name }}</p>
-                
             </div>
 
             <br />
             
-            <div ng-show="userLocation">You are {{ userLocation }}.</div>
+            <div class="uk-panel uk-panel-box">
+                <h3>Welcome {{ user.name }}</h3>
+                You are {{ userLocation }}.
+            </div>
 
             <!--ATTENDANCE-->
             <div class="uk-panel uk-panel-box">
@@ -63,7 +65,7 @@
     </div>
     
     <div><pre>
-        {{ dump(session) }}
+        <?= var_dump($session) ?>
     </pre></div>
     
     <!--JAVASCRIPT-->

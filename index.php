@@ -59,17 +59,14 @@ function getCheckinStatus($user, $conf) {
 // HOME PAGE
 $app->get('/', $auth->protect(), function() use($app) {
     
-    // get conference dtails
-    //$conf = getConferenceDetails();
-    $_SESSION['conf'] = $conf;
+    $app->render('main.html', array('session' => $_SESSION));
     
-    // if conference day, get checkin status
-    if ($conf != 'none') {
-        $_SESSION['user']['checkin'] = getCheckinStatus($_SESSION['user']['id'], $conf['id']);
-    }
+});
+
+// USER ROUTES
+$app->get('/users/current', $auth->protect(), function() use($app) {
     
-   // render
-    $app->render('main.html');
+    echo json_encode($_SESSION['user'], JSON_PRETTY_PRINT);
     
 });
 
@@ -84,17 +81,16 @@ $app->get('/conferences/date/:date', $auth->protect(), function($date) use($app)
     } else {
         $data = null;
     }
-        
+    
     echo json_encode($data, JSON_PRETTY_PRINT);    
     
 });
 
-// SET LOCATION
-$app->post('/loc/:loc', function($loc) use($app) {
-    // log location in session
-    $_SESSION['user']['location'] = $loc;
-    echo json_encode($loc);
+// CHECKIN ROUTES
+$app->get('/checkins/today', $auth->protect(), function() use($app) {
+    
 });
+
 
 
 // CHECKIN

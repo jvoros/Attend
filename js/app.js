@@ -3,20 +3,29 @@ var baseURL = 'http://localhost/Sites/DHREM/Attend';
 var app = angular.module('app', []);
 
 // Main Controller
-app.controller('mainController', ['$scope', 'dataFactory', function($scope, dataFactory){
+app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dataFactory) {
     
-    $scope.conf = {};
     $scope.status = '';
     $scope.error = '';
+    $scope.user = '';
     $scope.userLocation = null;
+    $scope.conf = {};
+    
+    function getUser() {
+        dataFactory.getUser()
+            .success(function (data) { $scope.user = data; })
+            .error(function (error) { $scope.status = 'Error loading user'; });
+    }
+    
+    getUser();
     
     function getConfByDate(date) {
         dataFactory.getConferenceByDate(date)
-            .success(function(data){ $scope.conf = data; })
-            .error(function(error){ $scope.status = 'Error loading conference'; });
+            .success(function (data) { $scope.conf = data; })
+            .error(function (error) { $scope.status = 'Error loading conference'; });
     };
     
-    getConfByDate('2014-07-10');
+    getConfByDate(getToday());
     
     // Google Maps Business
     // http://www.victorshi.com/blog/post/Use-Geolocation-API-with-Angularjs
@@ -64,6 +73,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function($scope, data
         
         // check user location
         // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
+        // $scope.$apply is key here
         if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
             $scope.userLocation = 'primary';
             $scope.$apply();
@@ -116,11 +126,41 @@ app.factory('dataFactory', ['$http', function($http){
     
     var dataFactory = {};
     
-    dataFactory.getConferenceByDate = function(date) {
+    dataFactory.getUser = function() {
+        return $http.get(baseURL + '/users/current');
+    };
+    
+    
+    dataFactory.getConferenceByDate = function (date) {
         return $http.get(baseURL + '/conferences/date/' + date);
     };
     
+    dataFactory.getCheckinToday = function() {
+        return $http.get(baseURL + '/checkins/today');
+    };
     return dataFactory;
     
 }]);
+
+// Utility functions
+// date Y-m-d
+function getToday() {
+    // GET CURRENT DATE
+    var date = new Date();
+
+    // GET YYYY, MM AND DD FROM THE DATE OBJECT
+    var yyyy = date.getFullYear().toString();
+    var mm = (date.getMonth()+1).toString();
+    var dd  = date.getDate().toString();
+
+    // CONVERT mm AND dd INTO chars
+    var mmChars = mm.split('');
+    var ddChars = dd.split('');
+
+    // CONCAT THE STRINGS IN YYYY-MM-DD FORMAT
+    var datestring = yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
+    
+    return datestring;
+
+}
 
