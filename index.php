@@ -48,18 +48,12 @@ $auth = new AuthProtect($app);
 function getConferenceDetails() {
     $confer = R::findOne('conference', ' day = ? ', array(date("Y-m-d")));
     
+    R::preload($confer, array('location' => 'location', 'remote' => 'location'));
+    
     if (empty($confer)) {
         $conf = 'none';
-    
     } else {        
-        // get conference details
-        $conf = array();
-        $conf['id']         = $confer->id;
-        $conf['day']        = $confer->day;
-        $conf['location']   = $confer->location->name;
-        $conf['coords']     = $confer->location->coords;
-        $conf['remote']     = $confer->fetchAs('location')->remote->name;
-        $conf['r_coords']   = $confer->fetchAs('location')->remote->coords;
+        $conf = $confer->export();
     }
     
     return $conf;

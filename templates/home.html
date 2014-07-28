@@ -16,15 +16,19 @@
 <div class="uk-panel uk-panel-box">
 {% if session.conf != 'none' %}     
     <h2>{{ session.conf.day }}<br />Conference</h2>
-    <p>at {{ session.conf.location }}</p>
+    <p>at {{ session.conf.location.name }}</p>
     
+    {% if session.user.checkin.status == 'none' %}
     <div id="checkin-button">
         <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large">Check In</a></p>
     </div>
+    {% endif %}
  
+    {% if session.user.checking.status == 'in' %}
     <div id="checkout-button">
         <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large">Check Out</a></p>
     </div>
+    {% endif %}
     
     <div id="not-here">
         <p>You must be at the conference or remote location in order to check in or out.</p>
@@ -50,7 +54,7 @@
 <a href="{{ base_url }}/logout">Logout</a>
 
 <!--JAVASCRIPT-->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
 <script type="text/javascript">
     
     // INITIALIZE CALLBACK FUNCTION
@@ -73,8 +77,25 @@
             map: map,
         });
         
-        // put primary and remote locations on map
-        // globals
+        // utility function to turn string of four coordinates (comma separated) into google maps polygon
+        function coordsPoly(x_string) {
+            var r = x_string.split(",");
+            var coords = [
+                new google.maps.LatLng(r[0], r[1]),
+                new google.maps.LatLng(r[2], r[3]),
+                new google.maps.LatLng(r[4], r[5]),
+                new google.maps.LatLng(r[6], r[7])
+            ]; 
+            var poly = new google.maps.Polygon({
+                paths: coords
+            });
+            return poly;
+        };
+        
+        // put locations on map
+        var locationPoly = coordsPoly("{{ session.conf.location.coords }}");
+        var remotePoly = coordsPoly("{{ session.conf.remote.coords }}");
+        
         locationPoly.setMap(map);
         remotePoly.setMap(map);
         
@@ -138,30 +159,11 @@
         }, 'json');
     });
 
-    // utility function to turn string of four coordinates (comma separated) into google maps polygon
-    function coordsPoly(x_string) {
-        var r = x_string.split(",");
-        var coords = [
-            new google.maps.LatLng(r[0], r[1]),
-            new google.maps.LatLng(r[2], r[3]),
-            new google.maps.LatLng(r[4], r[5]),
-            new google.maps.LatLng(r[6], r[7])
-        ]; 
-        var poly = new google.maps.Polygon({
-            paths: coords
-        });
-        return poly;
-    };
+    
     
     // BOOTSTRAPPING FUNCTION THAT RUNS ON PAGE LOAD
     // ON PAGE LOAD: check for geolocation
     if (navigator.geolocation) {
-       
-        // google maps polys for location and remote
-        // for some reason, must be defined outside initialization funciton or null result ???
-        var locationPoly = coordsPoly("{{ session.conf.coords }}");
-        var remotePoly = coordsPoly("{{ session.conf.r_coords }}");
-        
         // get current position, pass in success callback function that takes location as parameter
         // intialize function contains all DOM manipulation after location obtained
         navigator.geolocation.getCurrentPosition(initialize);             
