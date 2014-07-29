@@ -2,11 +2,9 @@
 
 {% block main %}
 
-<style>
-    #checkin-button   { display: none; }
-    #checkout-button  { display: none; }
-    #not-here         { display: none; }    
-
+<style>   
+    #here       { display: none; }
+    #not-here   { display: none; }
 </style>
 
 <!--MAP -->
@@ -14,21 +12,39 @@
 
 <!--CHECKIN/OUT-->
 <div class="uk-panel uk-panel-box">
-{% if session.conf != 'none' %}     
-    <h2>{{ session.conf.day }}<br />Conference</h2>
-    <p>at {{ session.conf.location.name }}</p>
+{% if _.conf != 'none' %}     
+    <h2>{{ _.conf.title }}</h2>
+    <p>{{ _.conf.day }}</p>
+    <p>at {{ _.conf.location.name }}</p>
     
-    {% if session.user.checkin.status == 'none' %}
-    <div id="checkin-button">
-        <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large">Check In</a></p>
+    {% if flash.error %}
+    <div>
+        <b>Error:</b> {{ flash.error }}
     </div>
     {% endif %}
- 
-    {% if session.user.checking.status == 'in' %}
-    <div id="checkout-button">
-        <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large">Check Out</a></p>
+    
+    <div id="here">
+        {% if _.checkin.in is null %}
+        <div id="checkin-button">
+            <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large" href="checkin">Check In</a></p>
+        </div>
+        {% endif %}
+
+        {% if _.checkin.in is defined and _.checkin.out is null %}
+        <div id="checkout-button">
+            <p><b>Check In:</b> {{ _.checkin.in }}</p>
+            <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large" href="checkout">Check Out</a></p>
+        </div>
+        {% endif %}
+        
+        {% if _.checkin.out is defined %}
+        <div>
+            <p><b>Check In:</b> {{ _.checkin.in }}</p>
+            <p><b>Check Out:</b> {{ _.checkin.out }}</p>
+            <p><b>Total Time:</b> {{ _.checkin.total }}</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
     
     <div id="not-here">
         <p>You must be at the conference or remote location in order to check in or out.</p>
@@ -59,6 +75,7 @@
     
     // INITIALIZE CALLBACK FUNCTION
     // success callback after geolocation obtained
+    // p is location from geolocation service
     function initialize(p) { 
         
         // google maps point for users location
@@ -93,8 +110,8 @@
         };
         
         // put locations on map
-        var locationPoly = coordsPoly("{{ session.conf.location.coords }}");
-        var remotePoly = coordsPoly("{{ session.conf.remote.coords }}");
+        var locationPoly = coordsPoly("{{ _.conf.location.coords }}");
+        var remotePoly = coordsPoly("{{ _.conf.remote.coords }}");
         
         locationPoly.setMap(map);
         remotePoly.setMap(map);
@@ -103,71 +120,29 @@
         function postLocation(l) {
             $.post("{{ base_url }}/loc/"+l, function(data){
                 console.log("At location: "+l);
-                console.log("PHP return: " + data);   
+                console.log("PHP return: " + data);
+                if (data == 'remote' || data == 'primary') {
+                    $('#here').show(); 
+                } else {
+                    $('#not-here').show();
+                };
             });
         }
         
-        var checkin = {
-            status:"{{ session.user.checkin.status }}", 
-            id:"{{ session.user.checkin.id }}"
-        };
-        
         if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
-            var l = postLocation("primary");
-            if (checkin.status == 'none') { $('#checkin-button').show(); }
-            if (checkin.status == 'in') { $('#checkout-button').show(); }
+            postLocation("primary");
         } else if (google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
-            var l = postLocation("remote");
-            if (checkin.status == 'none') { $('#checkin-button').show(); }
-            if (checkin.status == 'in') { $('#checkout-button').show(); }
+            postLocation("remote");
         } else { 
-            var l = postLocation("other");
-            $('#not-here').show();
+            postLocation("other");
         };
         
     }
     // INITIALIZE - END
     
-    // Button click handlers
-    $('#checkin-button').click(function(){
-        var that = this;
-        $.post('{{ base_url }}/checkin', function(data){
-            console.log("checkin: "+data);
-            if (data.error) {
-                alert(data.error);
-                $(that).hide();
-            }
-            if (data.success) {
-                alert("Thank you for checking in!");
-                $(that).hide();
-            }
-            
-        }, 'json');
-    });
-    
-    $('#checkout-button').click(function(){
-        var that = this;
-        $.post('{{ base_url }}/checkout', function(data){
-            if (data.error) {
-                alert(data.error);
-            }
-            if (data.success) {
-                $(that).hide();
-                $("#messages").html(data.success);
-            }
-            
-        }, 'json');
-    });
-
-    
-    
-    // BOOTSTRAPPING FUNCTION THAT RUNS ON PAGE LOAD
-    // ON PAGE LOAD: check for geolocation
+    // ON PAGE LOAD: check for geolocation, if available, run initialize()
     if (navigator.geolocation) {
-        // get current position, pass in success callback function that takes location as parameter
-        // intialize function contains all DOM manipulation after location obtained
         navigator.geolocation.getCurrentPosition(initialize);             
-    
     } else {
         $('#map-canvas').html("Geolocation not supported");
     }    

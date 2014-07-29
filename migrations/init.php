@@ -34,7 +34,7 @@ $loc2_id = R::store($loc2);
 
 $loc3           = R::dispense('location');
 $loc3->name     = "Voros House";
-$loc3->coords   = "39.703910,-104.923371,39.703910,-104.924605,39.704488,-104.924573,39.704471,-104.923296";
+$loc3->coords   = "39.703708,-104.924492,39.704351,-104.924476,39.704351,-104.923248,39.703687,-104.923393";
 $loc3_id = R::store($loc3);
 
 $loc4           = R::dispense('location');
@@ -53,6 +53,7 @@ $conf->day          = "2014-06-14";
 $conf->location     = $loc;
 $conf->remote       = $loc3;
 $conf->duration     = 4;
+$conf->title        = "Weekly Conference";
 $conf_id = R::store($conf);
 
 $conf2              = R::dispense('conference');
@@ -60,6 +61,7 @@ $conf2->day         = date('Y-m-d');
 $conf2->location    = $loc2;
 $conf2->remote      = $loc3;
 $conf2->duration    = 4;
+$conf2->title        = "Weekly Conference";
 $conf2_id = R::store($conf2);
 
 echo "Created conferences <br />";
@@ -68,9 +70,9 @@ echo "Created conferences <br />";
 $check              = R::dispense('checkin');
 $check->conference  = $conf;
 $check->user        = $user;
-$check->in          = "07:36";
-$check->out         = "10:48";
-$check->total       = "3";
+$check->in          = date('H:i:s', strtotime('2014-06-14 7:32:12'));
+$check->out         = date('H:i:s', strtotime('2014-06-14 12:02:12'));
+$check->total       = round((strtotime($check->out) - strtotime($check->in))/3600, 2);
 $check_id = R::store($check);
 
 echo "Created checkin with user and conference <br />";
