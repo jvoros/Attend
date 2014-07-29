@@ -1,2 +1,3 @@
 .DS_Store
 dbase.sqlite
+vendor/redbean/redbean.php
