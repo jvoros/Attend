@@ -4,9 +4,19 @@
 *********************************/
 
 // php housekeeping
+
+date_default_timezone_set('America/Denver');
 session_cache_limiter(false);
 session_start();
-date_default_timezone_set('America/Denver');
+
+if (!isset($_SESSION['start'])) {
+   $_SESSION['start'] = time();
+} elseif (time() - $_SESSION['start'] > 10) {
+    $_SESSION = array();
+    session_destroy();
+    session_start();
+    $_SESSION['start'] = time();
+}
 
 // composer bootstrapping
 require 'vendor/autoload.php';
@@ -28,29 +38,13 @@ $auth = new AuthProtect($app);
 
 // UTILITY FUNCTIONS
 
-function getCheckinStatus($user, $conf) {
+function getCheckinStatus($conf) {
     $checkinToday = R::findOne('checkin', 
                                ' user_id = :user AND conference_id = :conf ', 
-                               array(':user' => $user, ':conf' => $conf));
+                               array(':user' => $_SESSION['user']['id'], ':conf' => $conf));
     
-    if (empty($checkinToday)) {
-        $checkin['status']  = 'none';
-        $checkin['id']      = FALSE;
-    } elseif (empty($checkinToday->out)){
-        $checkin['status']  = 'in';
-        $checkin['id']      = $checkinToday->id;
-        $checkin['in']      = $checkinToday->in;
-    } else {
-        $checkin['status']  = 'out';
-        $checkin['id']      = $checkinToday->id;
-        $checkin['in']      = $checkinToday->in;
-        $checkin['out']     = $checkinToday->out;
-    }
-    
-    return $checkin;
+    return $checkinToday->export();
 }
-
-
 
 /*********************************
     ROUTES
@@ -81,17 +75,46 @@ $app->get('/conferences/date/:date', $auth->protect(), function($date) use($app)
     } else {
         $data = null;
     }
-    
+    $_SESSION['conf'] = $data;
     echo json_encode($data, JSON_PRETTY_PRINT);    
     
 });
 
 // CHECKIN ROUTES
 $app->get('/checkins/today', $auth->protect(), function() use($app) {
-    
+    $checkin = getCheckinStatus($_SESSION['conf']['id']);
+    $_SESSION['checkin'] = $checkin;
+    echo json_encode($checkin);
+        
 });
 
+$app->post('/checkins', $auth->protect(), function() use($app) {
+    $checkin = R::dispense('checkin');
+    $checkin->conference_id = $_SESSION['conf']['id'];
+    $checkin->user_id = $_SESSION['user']['id'];
+    $checkin->in = date("H:i:s");
+    $checkin_id = R::store($checkin);
+    $checkin = $checkin->export();
+    
+    $_SESSION['checkin'] = $checkin;
+    echo json_encode($checkin);
+});
 
+// handle time on server for consistency
+$app->put('/checkout/:id', $auth->protect(), function($id) use($app) {
+    $checkin = R::load('checkin', $id);
+    $checkin->out = date("H:i:s");
+    $checkin_id = R::store($checkin);
+    $checkin = $checkin->export();
+    
+    $_SESSION['checkin'] = $checkin;    
+    echo json_encode($checkin);
+});
+
+// GET SESSION
+$app->get('/getsession', function() use($app) {
+    echo json_encode($_SESSION, JSON_PRETTY_PRINT);
+});
 
 // CHECKIN
 $app->post('/checkin', function() use($app) {
@@ -147,6 +170,7 @@ $app->get('/login', function() use($app) {
 
 $app->get('/logout', function() use($app) {
     $_SESSION = array();
+    session_destroy();
     $app->redirect(BASE_URL, 303);
 });
 

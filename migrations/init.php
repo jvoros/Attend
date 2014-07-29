@@ -53,6 +53,7 @@ $conf->day          = "2014-06-14";
 $conf->location     = $loc;
 $conf->remote       = $loc3;
 $conf->duration     = 4;
+$conf->name         = "Morbity and Mortality";
 $conf_id = R::store($conf);
 
 $conf2              = R::dispense('conference');
@@ -60,6 +61,7 @@ $conf2->day         = date('Y-m-d');
 $conf2->location    = $loc2;
 $conf2->remote      = $loc3;
 $conf2->duration    = 4;
+$conf2->name         = "Morbity and Mortality";
 $conf2_id = R::store($conf2);
 
 echo "Created conferences <br />";
@@ -68,9 +70,9 @@ echo "Created conferences <br />";
 $check              = R::dispense('checkin');
 $check->conference  = $conf;
 $check->user        = $user;
-$check->in          = "07:36";
-$check->out         = "10:48";
-$check->total       = "3";
+$check->in          = date('H:i:s', strtotime('2014-06-14 07:32:12'));
+$check->out         = date('H:i:s', strtotime('2014-06-14 11:32:12'));
+$check->total       = $check->out - $check->in;
 $check_id = R::store($check);
 
 echo "Created checkin with user and conference <br />";

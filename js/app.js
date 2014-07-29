@@ -5,27 +5,55 @@ var app = angular.module('app', []);
 // Main Controller
 app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dataFactory) {
     
-    $scope.status = '';
-    $scope.error = '';
-    $scope.user = '';
-    $scope.userLocation = null;
-    $scope.conf = {};
+    // $scope variables
+    $scope.status;
+    $scope.error;
+    $scope.user;
+    $scope.userLocation = 'other';
+    $scope.conf;
+    $scope.checkin;
+    $scope.session;
     
+    
+    // User controls
     function getUser() {
         dataFactory.getUser()
-            .success(function (data) { $scope.user = data; })
-            .error(function (error) { $scope.status = 'Error loading user'; });
+        .success(function (data) { $scope.user = data; })
+        .error(function (error) { $scope.status = 'Error loading user'; });
     }
     
     getUser();
     
+    // Conference controls
     function getConfByDate(date) {
         dataFactory.getConferenceByDate(date)
-            .success(function (data) { $scope.conf = data; })
-            .error(function (error) { $scope.status = 'Error loading conference'; });
+        .success(function (data) { $scope.conf = data; })
+        .error(function (error) { $scope.status = 'Error loading conference'; });
     };
     
     getConfByDate(getToday());
+    
+    // Checkin controls
+    function getCheckinToday() {
+        dataFactory.getCheckinToday()
+        .success(function (data) { $scope.checkin = data; })
+        .error(function (error) { $scope.status = 'Error loading checkin'; });
+    };
+    
+    getCheckinToday();
+    
+    $scope.checkIn = function() {
+        dataFactory.checkIn()
+        .success(function (data) { $scope.checkin = data; })
+        .error(function(data) { $scope.status = 'Error loading checkin'; });
+    };
+    
+    // Utility controls
+    $scope.getSession = function() {
+        dataFactory.getSession()
+        .success(function (data) { $scope.session = JSON.stringify(data, null, 4); console.log('fired getSession'); })
+        .error(function (data) { $scope.status = 'Error loading session'; });
+    };
     
     // Google Maps Business
     // http://www.victorshi.com/blog/post/Use-Geolocation-API-with-Angularjs
@@ -81,7 +109,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
             $scope.userLocation = 'remote';
             $scope.$apply();
         } else { 
-            $scope.userLocation = null;
+            $scope.userLocation = 'other';
             $scope.$apply();
         }
 
@@ -126,18 +154,34 @@ app.factory('dataFactory', ['$http', function($http){
     
     var dataFactory = {};
     
+    // User methods
     dataFactory.getUser = function() {
         return $http.get(baseURL + '/users/current');
     };
     
-    
+    // Conference methods
     dataFactory.getConferenceByDate = function (date) {
         return $http.get(baseURL + '/conferences/date/' + date);
     };
     
+    // Checkin methods
     dataFactory.getCheckinToday = function() {
         return $http.get(baseURL + '/checkins/today');
     };
+    
+    dataFactory.checkIn = function() {
+        return $http.post(baseURL + '/checkins');
+    };
+    
+    dataFactory.checkOut = function(id) {
+        return $http.put(baseURL + '/checkins');
+    };
+    
+    // Utility methods
+    dataFactory.getSession = function() {
+        return $http.get(baseURL + '/getsession');
+    };
+    
     return dataFactory;
     
 }]);
