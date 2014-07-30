@@ -2,18 +2,23 @@ var baseURL = 'http://localhost/Sites/DHREM/Attend';
 
 var app = angular.module('app', []);
 
-// Main Controller
+// CONTROLLER
 app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dataFactory) {
     
     // $scope variables
     $scope.status;
     $scope.error;
+    
     $scope.user;
     $scope.userLocation = 'other';
     $scope.conf;
-    $scope.checkin;
-    $scope.session;
+    scope.checkin;
     
+    $scope.map;
+    $scope.locPoly;
+    $scope.remPoly;
+
+    $scope.session;
     
     // User controls
     function getUser() {
@@ -55,7 +60,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
         .error(function (data) { $scope.status = 'Error loading session'; });
     };
     
-    // Google Maps Business
+    // GOOGLE MAPS FUNCTIONS
     // http://www.victorshi.com/blog/post/Use-Geolocation-API-with-Angularjs
     // http://jsfiddle.net/svigna/pc7Uu/
     
@@ -74,46 +79,56 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
         return poly;
     };
     
+    // create polys from coords, put on map
+    function showPolys(loc, rem) {
+        $scope.locPoly = coordsPoly(loc.coords);
+        $scope.remPoly = coordsPoly(rem.coords);
+        
+        $scope.locPoly.setMap($scope.map);
+        $scope.remPoly.setMap($scope.map);
+    };
+    
+    // check user location
+    // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
+    // $scope.$apply is key here
+    function checkLoc() {
+        if (google.maps.geometry.poly.containsLocation($scope.myLoc, $scope.locPoly)){
+            return 'primary';
+        } else if (google.maps.geometry.poly.containsLocation($scope.myLoc, $scope.remPoly)) { 
+            return 'remote';
+        } else { 
+            return 'other';
+        }
+    };
+    
+    // init the map, load markers, check location
     function showPosition(p){
         
         // google maps point for users location
-        var myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+        $scope.myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
         
         var mapOptions = {
-          center: myLoc,
+          center: $scope.myLoc,
           zoom: 16
         };
         
         // load map into #map-canvas
-        var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+        $scope.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
         
+        // add location marker
         var marker = new google.maps.Marker({
-            position: myLoc, 
-            map: map,
+            position: $scope.myLoc, 
+            map: $scope.map
         });
         
-        // load locations
-        var locationPoly = coordsPoly($scope.conf.location.coords);
-        var remotePoly = coordsPoly($scope.conf.remote.coords);
-        
-        locationPoly.setMap(map);
-        remotePoly.setMap(map);
-        
-        // check user location
-        // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
-        // $scope.$apply is key here
-        if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
-            $scope.userLocation = 'primary';
-            $scope.$apply();
-        } else if (google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
-            $scope.userLocation = 'remote';
-            $scope.$apply();
-        } else { 
-            $scope.userLocation = 'other';
+        // if conference day load locations then check user location
+        if ($scope.conf) {
+            showPolys($scope.conf.location, $scope.conf.remote);
+            $scope.userLocation = checkLoc();
             $scope.$apply();
         }
 
-    }
+    } //end showPosition()
     
     // error handling
     function showError(error) {
@@ -148,6 +163,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     
 }]);
 
+// FACTORY
 // Factory to handle communication with the backend
 // http://weblogs.asp.net/dwahlin/using-an-angularjs-factory-to-interact-with-a-restful-service
 app.factory('dataFactory', ['$http', function($http){

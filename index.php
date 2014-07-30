@@ -4,19 +4,7 @@
 *********************************/
 
 // php housekeeping
-
 date_default_timezone_set('America/Denver');
-session_cache_limiter(false);
-session_start();
-
-if (!isset($_SESSION['start'])) {
-   $_SESSION['start'] = time();
-} elseif (time() - $_SESSION['start'] > 10) {
-    $_SESSION = array();
-    session_destroy();
-    session_start();
-    $_SESSION['start'] = time();
-}
 
 // composer bootstrapping
 require 'vendor/autoload.php';
@@ -28,10 +16,23 @@ R::freeze(true);
 // app wide utility functions and constants
 define('BASE_URL', 'http://localhost/Sites/DHREM/Attend'); // also defined in app.js 
 
-// initialize Slim, use Twig to render views
+// initialize Slim
 $app = new \Slim\Slim(array(
     'templates.path' => 'templates',
 ));
+
+// add encrypted cookies, access via $_SESSION superglobal
+$app->add(new \Slim\Middleware\SessionCookie(array(
+    'expires' => '240 minutes',
+    'path' => '/',
+    'domain' => null,
+    'secure' => false,
+    'httponly' => false,
+    'name' => 'slim_session',
+    'secret' => 'RogerRogerAttendThis$$$',
+    'cipher' => MCRYPT_RIJNDAEL_256,
+    'cipher_mode' => MCRYPT_MODE_CBC
+)));
 
 // route middleware for authorization redirect
 $auth = new AuthProtect($app);
