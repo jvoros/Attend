@@ -17,6 +17,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     $scope.map;
     $scope.locPoly;
     $scope.remPoly;
+    //$scope.getLocation;
 
     $scope.session;
     
@@ -89,8 +90,6 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     };
     
     // check user location
-    // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
-    // $scope.$apply is key here
     function checkLoc() {
         if (google.maps.geometry.poly.containsLocation($scope.myLoc, $scope.locPoly)){
             return 'primary';
@@ -122,6 +121,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
         });
         
         // if conference day load locations then check user location
+        // http://jimhoskins.com/2012/12/17/angularjs-and-apply.html
         if ($scope.conf) {
             showPolys($scope.conf.location, $scope.conf.remote);
             $scope.userLocation = checkLoc();
@@ -150,7 +150,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     }
     
     // check for geolocation and initialize
-    function getLocation() {
+    function getLocation(){
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError);
         }
