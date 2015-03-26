@@ -14,14 +14,19 @@ R::setup('sqlite:dbase.sqlite');
 R::freeze(true);
 
 // app wide utility functions and constants
-define('BASE_URL', 'http://localhost/Sites/DHREM/Attend'); // also defined in app.js 
+// also defined in app.js 
+define('BASE_URL', 'http://localhost/Sites/DHREM/Attend'); 
 
-// initialize Slim
+
+/*********************************
+    INITIALIZE SLIM
+*********************************/
+
 $app = new \Slim\Slim(array(
     'templates.path' => 'templates',
 ));
 
-// add encrypted cookies, access via $_SESSION superglobal
+// add encrypted cookies to enable flash messages, access via $_SESSION superglobal
 $app->add(new \Slim\Middleware\SessionCookie(array(
     'expires' => '240 minutes',
     'path' => '/',
@@ -34,32 +39,143 @@ $app->add(new \Slim\Middleware\SessionCookie(array(
     'cipher_mode' => MCRYPT_MODE_CBC
 )));
 
-// route middleware for authorization redirect
-$auth = new AuthProtect($app);
+// prepare Twig view
+$app->view(new \Slim\Views\Twig());
+$app->view->parserOptions = array(
+    'charset' => 'utf-8',
+    'cache' => realpath('../templates/cache'),
+    'auto_reload' => true,
+    'strict_variables' => false,
+    'autoescape' => true,
+    'debug' => true
+);
 
-// UTILITY FUNCTIONS
+// give Twig templates access to global variables, dump() function, Slim View Extras
+$app->view->getEnvironment()->addGlobal('base_url', BASE_URL);
+$app->view->getEnvironment()->addExtension(new \Twig_Extension_Debug());
+$app->view->parserExtensions = array(new \Slim\Views\TwigExtension(), new \Twig_Extension_Debug());
+
+// Google PHP Library
+$client = new Google_Client();
+$client->setApplicationName('Attend');
+$client->setClientId('459801839286-j103ceme00kacpbrk19nihn7r3l2icme.apps.googleusercontent.com');
+$client->setClientSecret('C95vXMePXkVXKgtuQr8lWCqk');
+$client->setRedirectUri(BASE_URL . '/login');
+$client->setScopes(array(
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+));
+$app->client = $client;
+
+/*********************************
+    UTILITY FUNCTIONS
+*********************************/
 
 function getCheckinStatus($conf) {
     $checkinToday = R::findOne('checkin', 
                                ' user_id = :user AND conference_id = :conf ', 
                                array(':user' => $_SESSION['user']['id'], ':conf' => $conf));
     
-    return $checkinToday->export();
+    if($checkinToday) { return $checkinToday->export(); }
 }
+
+// HANDLE GOOGLE USER INFO
+function processGoogleUser($guser) {
+  
+  //$_SESSION['guser'] = $guser;
+  
+  // check domain
+  if ($guser['hd'] != 'denverem.org') {
+    $app = \Slim\Slim::getInstance();
+    $app->flash('error', 'You must use your @denverem.org email address.');
+    $app->redirect(BASE_URL . '/logout');
+    exit;
+  }
+  
+  // query database
+  $user = R::findOne('user', ' email = ? ', [$guser['email']]);
+  
+  // check if new user or new name
+  if (is_null($user)) {
+    $user->fname   = $guser['givenName'];
+    $user->lname   = $guser['familyName'];
+    $user->email   = $guser['email'];
+    $user->role    = '2';
+  } elseif ($user->fname != $guser['givenName'] || $user->lname != $guser['familyName']) {
+    $user->fname   = $guser['givenName'];
+    $user->lname   = $guser['familyName'];
+  }
+  
+  // update last visit, store
+  $user->last = date("Y-m-d H:i:s");
+  $user_id = R::store($user);
+  
+  // save in session
+  $_SESSION['user'] = $user->export();
+  $_SESSION['user']['role_name'] = $user->role->name;
+  
+}
+
+// ROUTE AUTHORIZATION BY ROLE
+$authorizedRole = function($role_name = 'user') {
+  return function() use ($role_name) {
+    if ($_SESSION['user']['role_name'] != $role_name) {
+    $app = \Slim\Slim::getInstance();
+    $app->flash('error', 'You do not have access to that resource.');
+    $app->redirect(BASE_URL);
+    }
+  };
+};
+
 
 /*********************************
     ROUTES
 *********************************/
 
-// HOME PAGE
-$app->get('/', $auth->protect(), function() use($app) {
+$app->get('/test', $authorizedRole('user'), function() use($app){
+  $app->render('client/test.html', array('session' => $_SESSION));
+});
+
+
+// GOOGLE OAUTH LOGIN
+// http://www.ibm.com/developerworks/library/mo-php-todolist-app/
+// https://developers.google.com/api-client-library/php/guide/aaa_oauth2_web
+// http://phppot.com/php/php-google-oauth-login/
+
+$app->get('/login', function() use($app){
     
-    $app->render('main.html', array('session' => $_SESSION));
+  // handle redirect from Google with code as URL parameter
+  if (isset($_GET['code'])) {
+    $app->client->authenticate($_GET['code']);
+    $app->client->getAccessToken();
+    $service = new Google_Service_Oauth2($app->client);
+    $user = $service->userinfo->get();
+    processGoogleUser($user);
+    $app->redirect(BASE_URL);
+  
+  } else {
+    $authUrl = $app->client->createAuthUrl();
+    $app->redirect($authUrl);
+  }
+  
+});
+
+$app->get('/logout', function () use ($app) {
+  $app->flashKeep();
+  unset($_SESSION);
+  $app->client->revokeToken();
+  $app->redirect(BASE_URL);
+});
+
+// HOME PAGE
+$app->get('/', function() use($app) {
+  
+  $app->render('client/main.html', array('session' => $_SESSION));
     
 });
 
 // USER ROUTES
-$app->get('/users/current', $auth->protect(), function() use($app) {
+$app->get('/users/current', function() use($app) {
     
     echo json_encode($_SESSION['user'], JSON_PRETTY_PRINT);
     
@@ -67,7 +183,7 @@ $app->get('/users/current', $auth->protect(), function() use($app) {
 
 // CONFERENCE ROUTES
 // GET conference BY date (Y-m-d)
-$app->get('/conferences/date/:date', $auth->protect(), function($date) use($app) {
+$app->get('/conferences/date/:date', function($date) use($app) {
     
     $conf = R::findOne('conference', ' day = ? ', array(date($date)));
     if($conf) { 
@@ -82,14 +198,17 @@ $app->get('/conferences/date/:date', $auth->protect(), function($date) use($app)
 });
 
 // CHECKIN ROUTES
-$app->get('/checkins/today', $auth->protect(), function() use($app) {
-    $checkin = getCheckinStatus($_SESSION['conf']['id']);
-    $_SESSION['checkin'] = $checkin;
-    echo json_encode($checkin);
-        
+$app->get('/checkins/today', function() use($app) {
+    $checkinToday = R::findOne('checkin', ' user_id = :user AND conference_id = :conf ', 
+                               array(':user' => $_SESSION['user']['id'], ':conf' => $_SESSION['conf']['id']));
+    
+    if($checkinToday) { 
+        $_SESSION['checkin'] = $checkin;
+        echo json_encode($checkinToday->export()); 
+    }        
 });
 
-$app->post('/checkins', $auth->protect(), function() use($app) {
+$app->post('/checkin', function() use($app) {
     $checkin = R::dispense('checkin');
     $checkin->conference_id = $_SESSION['conf']['id'];
     $checkin->user_id = $_SESSION['user']['id'];
@@ -101,8 +220,20 @@ $app->post('/checkins', $auth->protect(), function() use($app) {
     echo json_encode($checkin);
 });
 
+$app->post('/checkout', function() use($app) {
+    $checkin = R::load('checkin', $_SESSION['checkin']['id']);
+    if($checkin) {
+        $checkin->out = date("H:i:s");
+        $checkin_id = R::store($checkin);
+         $checkin = $checkin->export();
+    
+        $_SESSION['checkin'] = $checkin;
+        echo json_encode($checkin);
+    }
+});
+
 // handle time on server for consistency
-$app->put('/checkout/:id', $auth->protect(), function($id) use($app) {
+$app->put('/checkout/:id', function($id) use($app) {
     $checkin = R::load('checkin', $id);
     $checkin->out = date("H:i:s");
     $checkin_id = R::store($checkin);
@@ -115,6 +246,10 @@ $app->put('/checkout/:id', $auth->protect(), function($id) use($app) {
 // GET SESSION
 $app->get('/getsession', function() use($app) {
     echo json_encode($_SESSION, JSON_PRETTY_PRINT);
+});
+
+$app->get('/ajax-logout', function() use($app) {
+    $_SESSION = array();
 });
 
 // CHECKIN
@@ -159,54 +294,6 @@ $app->post('/checkout', function() use($app) {
     
     echo json_encode($data);
        
-});
-
-
-
-// AUTHORIZATION HANDLING
-
-$app->get('/login', function() use($app) {
-    $app->render('login.html');
-});
-
-$app->get('/logout', function() use($app) {
-    $_SESSION = array();
-    session_destroy();
-    $app->redirect(BASE_URL, 303);
-});
-
-// Opauth handling
-$app->get('/auth/login/google(/:token)', function($token = '') use ($app) {     
-    // Opauth library for external provider authentication
-    require 'opauth.conf.php';
-    $opauth = new Opauth($config);
-});
-
-$app->post('/auth/response', function() use ($app) {
-    // get Opauth response
-    $re = unserialize(base64_decode($_POST['opauth']));
-    
-    // instantiate Opauth
-    require 'opauth.conf.php';
-    $Opauth = new Opauth($config, false);
-    
-    // custom oauthresponse handler to return local user_id
-    $oauthresponse = new OauthResponse($re, $Opauth);
-    $oar = $oauthresponse->getUser();
-    
-    /// reset session variables
-    unset($_SESSION['opauth']);
-    
-    // error handling
-    if (isset($oar['error'])) {
-        $app->flash('error', $oar['error']);
-        $_SESSION['loggedin'] = FALSE;
-        $app->response->redirect(BASE_URL . "/login", 303);
-    } else {
-        $_SESSION['loggedin'] = TRUE;
-        $_SESSION['user'] = $oar['user'];
-        $app->response->redirect(BASE_URL, 303);
-    }
 });
 
 

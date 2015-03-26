@@ -12,13 +12,14 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     $scope.user;
     $scope.userLocation = 'other';
     $scope.conf;
-    scope.checkin;
+    $scope.checkin;
     
     $scope.map;
     $scope.locPoly;
     $scope.remPoly;
 
     $scope.session;
+    $scope.unauth;
     
     // User controls
     function getUser() {
@@ -53,12 +54,30 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
         .error(function(data) { $scope.status = 'Error loading checkin'; });
     };
     
+    $scope.checkOut = function() {
+        dataFactory.checkOut()
+        .success(function(data) { $scope.checkin = data; })
+        .error(function(data) { $scope.status = 'Error loading checkout'; });
+    };
+    
     // Utility controls
     $scope.getSession = function() {
         dataFactory.getSession()
         .success(function (data) { $scope.session = JSON.stringify(data, null, 4); console.log('fired getSession'); })
         .error(function (data) { $scope.status = 'Error loading session'; });
     };
+    
+    $scope.getScope = function() {
+        console.dir($scope);
+    };
+    
+    $scope.unauthError = function() {
+        $scope.unauth = '401';
+    };
+    
+    $scope.ajaxLogout = function() {
+        dataFactory.ajaxLogout();
+    }
     
     // GOOGLE MAPS FUNCTIONS
     // http://www.victorshi.com/blog/post/Use-Geolocation-API-with-Angularjs
@@ -150,7 +169,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
     }
     
     // check for geolocation and initialize
-    function getLocation() {
+    $scope.getLocation = function() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError);
         }
@@ -159,7 +178,7 @@ app.controller('mainController', ['$scope', 'dataFactory', function ($scope, dat
         }
     }
  
-    getLocation();
+    $scope.getLocation();
     
 }]);
 
@@ -186,11 +205,11 @@ app.factory('dataFactory', ['$http', function($http){
     };
     
     dataFactory.checkIn = function() {
-        return $http.post(baseURL + '/checkins');
+        return $http.post(baseURL + '/checkin');
     };
     
     dataFactory.checkOut = function(id) {
-        return $http.put(baseURL + '/checkins');
+        return $http.post(baseURL + '/checkout');
     };
     
     // Utility methods
@@ -198,8 +217,32 @@ app.factory('dataFactory', ['$http', function($http){
         return $http.get(baseURL + '/getsession');
     };
     
+    dataFactory.ajaxLogout = function() {
+        return $http.get(baseURL + '/ajax-logout');
+    };
+    
     return dataFactory;
     
+}]);
+
+// 401 RESPONSE HANDLER
+// http://www.webdeveasy.com/interceptors-in-angularjs-and-useful-examples/
+// https://auth0.com/blog/2014/01/07/angularjs-authentication-with-cookies-vs-token/
+app.factory('errorInterceptor', ['$location', function(){
+    
+    var myInterceptor = {};
+    
+    myInterceptor.responseError = function(response){
+        if(response.status === 401) { window.location.reload(); }
+        return response;
+    };
+    
+    return myInterceptor;
+
+}]);
+
+app.config(['$httpProvider', function ($httpProvider) {
+    $httpProvider.interceptors.push('errorInterceptor');    
 }]);
 
 // Utility functions
@@ -223,4 +266,5 @@ function getToday() {
     return datestring;
 
 }
+
 

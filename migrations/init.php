@@ -11,13 +11,33 @@ R::setup('sqlite:../dbase.sqlite');
 R::nuke();
 echo "Nuked old dbase<br />";
 
+// ROLES
+$role_admin       = R::dispense('role');
+$role_admin->name = "admin";
+$role_admin_id = R::store($role_admin);
+
+$role_user        = R::dispense('role');
+$role_user->name  = "user";
+$role_user_id = R::store($role_user);
+
 // USERS
 $user           = R::dispense('user');
-$user->name     = "Jeremy Voros";
+$user->fname    = "Jeremy";
+$user->lname    = "Vorossssss";
 $user->email    = "jeremy.voros@denverem.org";
 $user->created  = "2014-04-16 17:30:30";
 $user->last     = date("Y-m-d H:i:s");
+$user->role     = $role_user;
 $user_id = R::store($user);
+
+$admin           = R::dispense('user');
+$admin->fname    = "Admin";
+$admin->lname    = "Admin";
+$admin->email    = "admin@denverem.org";
+$admin->created  = "2014-04-16 17:30:30";
+$admin->last     = date("Y-m-d H:i:s");
+$admin->role     = $role_admin;
+$admin_id = R::store($admin);
 
 echo "Created user <br />";
 

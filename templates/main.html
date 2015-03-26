@@ -13,12 +13,12 @@
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="js/uikit.min.js"></script>
     <script src="js/addons/datepicker.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.1/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.21/angular.min.js"></script>
 
 </head>
 <body ng-app="app" ng-controller="mainController" ng-cloak>
 
-    <div class="uk-vertical-align uk-text-center uk-height-1-1">
+    <div ng-hide="unauth" class="uk-vertical-align uk-text-center uk-height-1-1">
         <div class="uk-vertical-align-middle" style="width: 250px;">
             
             <!-- MAP-->
@@ -47,10 +47,10 @@
                    class="uk-width-1-1 uk-button uk-button-success uk-button-large">Check In</a>
                 <span ng-show="checkin.in">Checkin: {{ checkin.in }}</span>
                 
-                <a ng-show="checkin.in" 
+                <a ng-show="checkin.in && !checkin.out" 
                    ng-click="checkOut()" 
                    class="uk-width-1-1 uk-button uk-button-danger uk-button-large">Check Out</a>
-                <span ng-show="checkin.out">Checkout: {{ checkin.out }}</span>
+                <p ng-show="checkin.out">Checkout: {{ checkin.out }}<br /> Total: {{ checkin.total }}</p>
             </div>
             
             <br />
@@ -61,17 +61,27 @@
             </div>
 
             <!--LOGOUT-->
-            <br />
-
-            <a href="logout">Logout</a>
-            <br />
-            <a ng-click="getSession()">Get Session</a>
-            
+            <br />            
             
         </div>
     </div>
     
-    <div ng-show="session">
+    <div class="uk-panel uk-panel-box" ng-show="unauth">
+        <a class="uk-width-1-1 uk-button uk-button-primary uk-button-large" href="auth/login/google">Login via Google</a>
+    </div>
+    
+    <div uk-text-center>
+        <a href="logout">Logout</a>
+        <br />
+        <a ng-click="getSession()">Get Session</a> | 
+        <a ng-click="getScope()">Get Scope</a> | 
+        <a ng-click="unauthError()">401 Error</a>  |
+        <a ng-click="ajaxLogout()">ajaxLogout</a>
+    </div>
+    
+    
+    
+    <div ng-show="session" ng-show="scope">
         <h2>Session</h2>
         <pre>{{ session }}</pre>
     </div>
