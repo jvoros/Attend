@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Attend</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="{{ base_url }}/css/uikit.almost-flat.min.css" rel="stylesheet" />
+  <link href="{{ base_url }}/css/components/progress.almost-flat.min.css" rel="stylesheet" />
+
+  <!-- Javascript -->
+  <script src="{{ base_url }}/js/jquery-1.11.1.min.js"></script>
+  <script src="{{ base_url }}/js/fastclick.js"></script>
+  <script src="{{ base_url }}/js/uikit.min.js"></script>
+  
+  <style>
+    .uk-container {
+      margin: 1em 0;
+    }
+  </style>
+
+</head>
+<body>
+  
+  <nav class="uk-navbar uk-navbar-attached">
+    {% if session.user is not null %}
+    <span class="uk-navbar-brand">Hi, {{ session.user.fname }}.</span>
+    
+    <div class="uk-navbar-content uk-navbar-flip">
+      <a class="uk-button" href="{{ base_url }}/logout">Logout <i class="uk-icon-times"></i></a>
+    </div>
+    {% else %}
+    <span class="uk-navbar-brand">DH:Attend App</span>
+    {% endif %}
+  </nav> 
+  
+  <div class="uk-container">
+    
+    {% if flash.error is not null %}
+    <div class="uk-alert uk-alert-danger">{{ flash.error }}</div>
+    {% endif %}
+    
+    {% block main %}{% endblock %}
+  
+  </div>
+  
+  <!--UTILITY TO SEE SESSION VARIABLES-->
+  <div class="uk-container">
+    <br /><br />
+    <!-- This is a button toggling the modal -->
+    <button id="session-button" class="uk-button" data-uk-modal="{target:'#my-id'}">Show Session</button>
+  </div>
+    
+  <!-- This is the modal -->
+  <div id="my-id" class="uk-modal">
+      <div class="uk-modal-dialog">
+        <a class="uk-modal-close uk-close"></a>
+        <h2>Session</h2>
+        <pre id="session-data"></pre>
+      </div>
+  </div>
+
+  <script type="text/javascript">
+    $('#session-button').click(function(){
+      $.get('{{ base_url }}/getsession', function(data){
+        $('#session-data').html(JSON.stringify(data, null, 4));
+      }, 'json');
+    });    
+  </script>
+  <!--/END SESSION UTILITY-->
+
+</body>
+</html>

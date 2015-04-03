@@ -69,20 +69,49 @@ $loc5_id = R::store($loc5);
 
 // CONFERENCES
 $conf               = R::dispense('conference');
-$conf->day          = "2014-06-14";
-$conf->location     = $loc;
-$conf->remote       = $loc3;
-$conf->duration     = 4;
+$conf->start        = "2015-01-04 07:30:00";
+$conf->finish       = "2015-01-04 12:30:00";
+$conf->primary_loc  = $loc;
+$conf->sharedLocationList = [$loc3];
 $conf->name         = "Morbity and Mortality";
+$conf->elective     = FALSE;
 $conf_id = R::store($conf);
 
-$conf2              = R::dispense('conference');
-$conf2->day         = date('Y-m-d');
-$conf2->location    = $loc2;
-$conf2->remote      = $loc3;
-$conf2->duration    = 4;
-$conf2->name         = "Morbity and Mortality";
+$conf2               = R::dispense('conference');
+$conf2->start        = "2015-02-04 07:30:00";
+$conf2->finish       = "2015-02-04 12:30:00";
+$conf2->primary_loc  = $loc2;
+$conf2->sharedLocationList = [$loc3];
+$conf2->name        = "Morbity and Mortality";
+$conf2->elective    = FALSE;
 $conf2_id = R::store($conf2);
+
+$conf3              = R::dispense('conference');
+$conf3->start       = "2015-03-06 18:30:00";
+$conf3->finish      = "2015-03-06 20:30:00";
+$conf3->primary_loc = $loc;
+$conf3->sharedLocationList = [$loc3];
+$conf3->name        = "Asynchronous Module";
+$conf3->elective    = TRUE;
+$conf3_id = R::store($conf3);
+
+$conf4              = R::dispense('conference');
+$conf4->start       = date("Y-m-d H:i:s");
+$conf4->finish      = date("Y-m-d H:i:s", time()+7200);
+$conf4->primary_loc = $loc2;
+$conf4->sharedLocationList = [$loc, $loc3];
+$conf4->name        = "Test Conference";
+$conf4->elective    = FALSE;
+$conf4_id = R::store($conf4);
+
+$conf5              = R::dispense('conference');
+$conf5->start       = date("Y-m-d H:i:s", time()+28800);
+$conf5->finish      = date("Y-m-d H:i:s", time()+36000);
+$conf5->primary_loc = $loc5;
+$conf5->sharedLocationList = [$loc2, $loc3];
+$conf5->name        = "Test Elective";
+$conf5->elective    = TRUE;
+$conf5_id = R::store($conf5);
 
 echo "Created conferences <br />";
 
@@ -90,9 +119,25 @@ echo "Created conferences <br />";
 $check              = R::dispense('checkin');
 $check->conference  = $conf;
 $check->user        = $user;
-$check->in          = date('H:i:s', strtotime('2014-06-14 07:32:12'));
-$check->out         = date('H:i:s', strtotime('2014-06-14 11:32:12'));
-$check->total       = $check->out - $check->in;
+$check->in          = '2015-01-04 07:32:12';
+$check->out         = '2015-01-04 11:47:12';
+$check->total       = round((strtotime($check->out) - strtotime($check->in)) / 3600, 2);
 $check_id = R::store($check);
+
+$check2              = R::dispense('checkin');
+$check2->conference  = $conf;
+$check2->user        = $admin;
+$check2->in          = '2015-01-04 07:30:12';
+$check2->out         = '2015-01-04 10:15:12';
+$check2->total       = round((strtotime($check2->out) - strtotime($check2->in)) / 3600, 2);
+$check2_id = R::store($check2);
+
+$check3              = R::dispense('checkin');
+$check3->conference  = $conf3;
+$check3->user        = $user;
+$check3->in          = '2015-03-06 07:32:12';
+$check3->out         = '2015-03-06 9:52:47';
+$check3->total       = round((strtotime($check3->out) - strtotime($check3->in)) / 3600, 2);
+$check3_id = R::store($check3);
 
 echo "Created checkin with user and conference <br />";

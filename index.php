@@ -1,7 +1,9 @@
 <?
 /*********************************
-    INITIALIZE COMPONENTS
+    HOUSEKEEPING
 *********************************/
+
+session_start();
 
 // php housekeeping
 date_default_timezone_set('America/Denver');
@@ -19,25 +21,12 @@ define('BASE_URL', 'http://localhost/Sites/DHREM/Attend');
 
 
 /*********************************
-    INITIALIZE SLIM
+    INITIALIZE SLIM & COMPONENTS
 *********************************/
 
 $app = new \Slim\Slim(array(
     'templates.path' => 'templates',
 ));
-
-// add encrypted cookies to enable flash messages, access via $_SESSION superglobal
-$app->add(new \Slim\Middleware\SessionCookie(array(
-    'expires' => '240 minutes',
-    'path' => '/',
-    'domain' => null,
-    'secure' => false,
-    'httponly' => false,
-    'name' => 'slim_session',
-    'secret' => 'RogerRogerAttendThis$$$',
-    'cipher' => MCRYPT_RIJNDAEL_256,
-    'cipher_mode' => MCRYPT_MODE_CBC
-)));
 
 // prepare Twig view
 $app->view(new \Slim\Views\Twig());
@@ -51,7 +40,10 @@ $app->view->parserOptions = array(
 );
 
 // give Twig templates access to global variables, dump() function, Slim View Extras
-$app->view->getEnvironment()->addGlobal('base_url', BASE_URL);
+$twig = $app->view->getEnvironment();
+$twig->addGlobal('base_url', BASE_URL);
+$twig->addGlobal('session', $_SESSION);
+
 $app->view->getEnvironment()->addExtension(new \Twig_Extension_Debug());
 $app->view->parserExtensions = array(new \Slim\Views\TwigExtension(), new \Twig_Extension_Debug());
 
@@ -116,7 +108,8 @@ function processGoogleUser($guser) {
   
 }
 
-// ROUTE AUTHORIZATION BY ROLE
+// ROUTE AUTHORIZATION
+// by role
 $authorizedRole = function($role_name = 'user') {
   return function() use ($role_name) {
     if ($_SESSION['user']['role_name'] != $role_name) {
@@ -127,51 +120,67 @@ $authorizedRole = function($role_name = 'user') {
   };
 };
 
+// verify user logged in
+$verifyLogin = function() {
+  return function() {
+    if (!isset($_SESSION['user'])) {
+      $app = \Slim\Slim::getInstance();
+      $app->redirect(BASE_URL . '/loginform');
+    }
+  };
+};
 
 /*********************************
     ROUTES
 *********************************/
-
-$app->get('/test', $authorizedRole('user'), function() use($app){
-  $app->render('client/test.html', array('session' => $_SESSION));
-});
-
 
 // GOOGLE OAUTH LOGIN
 // http://www.ibm.com/developerworks/library/mo-php-todolist-app/
 // https://developers.google.com/api-client-library/php/guide/aaa_oauth2_web
 // http://phppot.com/php/php-google-oauth-login/
 
-$app->get('/login', function() use($app){
-    
+$app->get('/login', function() use($app){    
   // handle redirect from Google with code as URL parameter
   if (isset($_GET['code'])) {
     $app->client->authenticate($_GET['code']);
     $app->client->getAccessToken();
     $service = new Google_Service_Oauth2($app->client);
     $user = $service->userinfo->get();
-    processGoogleUser($user);
+    processGoogleUser($user); // utility function
     $app->redirect(BASE_URL);
-  
   } else {
     $authUrl = $app->client->createAuthUrl();
     $app->redirect($authUrl);
   }
-  
+});
+
+$app->get('/loginform', function() use ($app) {
+  $app->render('loginform.html');
 });
 
 $app->get('/logout', function () use ($app) {
   $app->flashKeep();
-  unset($_SESSION);
+  session_unset();
   $app->client->revokeToken();
-  $app->redirect(BASE_URL);
+  $app->redirect(BASE_URL . '/loginform');
 });
 
 // HOME PAGE
-$app->get('/', function() use($app) {
+$app->get('/', $verifyLogin(), function() use($app) {
+  require 'lib/homeController.php';
+  $app->render('home.html', array('data' => $data));
+});
+
+// CLIENT ROUTES
+
+// TEST ROUTES
+$app->get('/getsession', function() use ($app) {
+  header("Content-Type: application/json");
+  echo json_encode($_SESSION);
+});
+
+$app->get('/testconf', function() use($app) {
   
-  $app->render('client/main.html', array('session' => $_SESSION));
-    
 });
 
 // USER ROUTES
