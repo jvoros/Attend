@@ -1,119 +1,68 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
-    "hash": "3512515d673235781c47ca8836bb3207",
+    "hash": "d4c4d98b86cc543abc99e96f274a8296",
     "packages": [
         {
-            "name": "opauth/google",
-            "version": "0.2.2",
+            "name": "google/apiclient",
+            "version": "1.0.6-beta",
             "source": {
                 "type": "git",
-                "url": "https://github.com/opauth/google.git",
-                "reference": "35df77684c14acb346a8c3753ae3809852d1a47e"
+                "url": "https://github.com/google/google-api-php-client.git",
+                "reference": "a41a9dc0662e36420030eaab802dbb1f85459479"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opauth/google/zipball/35df77684c14acb346a8c3753ae3809852d1a47e",
-                "reference": "35df77684c14acb346a8c3753ae3809852d1a47e",
+                "url": "https://api.github.com/repos/google/google-api-php-client/zipball/a41a9dc0662e36420030eaab802dbb1f85459479",
+                "reference": "a41a9dc0662e36420030eaab802dbb1f85459479",
                 "shasum": ""
             },
             "require": {
-                "opauth/opauth": ">=0.2.0",
-                "php": ">=5.2.0"
+                "php": ">=5.2.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*"
             },
             "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "."
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "U-Zyn Chua",
-                    "email": "chua@uzyn.com",
-                    "homepage": "http://uzyn.com"
-                }
-            ],
-            "description": "Google strategy for Opauth",
-            "homepage": "http://opauth.org",
-            "keywords": [
-                "Authentication",
-                "auth",
-                "google"
-            ],
-            "time": "2012-10-18 14:39:52"
-        },
-        {
-            "name": "opauth/opauth",
-            "version": "0.4.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/opauth/opauth.git",
-                "reference": "436fb98c2374c9e8ae4d8adddf83214bee4d9c72"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/opauth/opauth/zipball/436fb98c2374c9e8ae4d8adddf83214bee4d9c72",
-                "reference": "436fb98c2374c9e8ae4d8adddf83214bee4d9c72",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.0"
-            },
-            "suggest": {
-                "opauth/facebook": "Allows Facebook authentication",
-                "opauth/google": "Allows Google authentication",
-                "opauth/twitter": "Allows Twitter authentication"
-            },
-            "type": "library",
             "autoload": {
                 "classmap": [
-                    "lib/Opauth/"
+                    "src/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
+            "include-path": [
+                "src/"
+            ],
             "license": [
-                "MIT"
+                "Apache-2.0"
             ],
-            "authors": [
-                {
-                    "name": "U-Zyn Chua",
-                    "email": "chua@uzyn.com",
-                    "homepage": "http://uzyn.com"
-                }
-            ],
-            "description": "Multi-provider authentication framework for PHP",
-            "homepage": "http://opauth.org",
+            "description": "Client library for Google APIs",
+            "homepage": "http://developers.google.com/api-client-library/php",
             "keywords": [
-                "Authentication",
-                "OpenId",
-                "auth",
-                "facebook",
-                "google",
-                "oauth",
-                "omniauth",
-                "twitter"
+                "google"
             ],
-            "time": "2013-05-10 09:01:52"
+            "time": "2014-09-30 19:33:59"
         },
         {
             "name": "slim/slim",
-            "version": "2.4.3",
+            "version": "2.6.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/codeguy/Slim.git",
-                "reference": "4906b77a07c7bd6ff1a99aea903e940a2d4fa106"
+                "url": "https://github.com/slimphp/Slim.git",
+                "reference": "20a02782f76830b67ae56a5c08eb1f563c351a37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codeguy/Slim/zipball/4906b77a07c7bd6ff1a99aea903e940a2d4fa106",
-                "reference": "4906b77a07c7bd6ff1a99aea903e940a2d4fa106",
+                "url": "https://api.github.com/repos/slimphp/Slim/zipball/20a02782f76830b67ae56a5c08eb1f563c351a37",
+                "reference": "20a02782f76830b67ae56a5c08eb1f563c351a37",
                 "shasum": ""
             },
             "require": {
@@ -146,21 +95,20 @@
                 "rest",
                 "router"
             ],
-            "time": "2014-04-05 18:33:59"
+            "time": "2015-03-08 18:41:17"
         },
         {
             "name": "slim/views",
             "version": "dev-master",
-            "target-dir": "Slim/Views",
             "source": {
                 "type": "git",
-                "url": "https://github.com/codeguy/Slim-Views.git",
-                "reference": "55752bbea0de537ccb7efd8e7dcacdcb369d8fba"
+                "url": "https://github.com/slimphp/Slim-Views.git",
+                "reference": "8561c785e55a39df6cb6f95c3aba3281a60ed5b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codeguy/Slim-Views/zipball/55752bbea0de537ccb7efd8e7dcacdcb369d8fba",
-                "reference": "55752bbea0de537ccb7efd8e7dcacdcb369d8fba",
+                "url": "https://api.github.com/repos/slimphp/Slim-Views/zipball/8561c785e55a39df6cb6f95c3aba3281a60ed5b0",
+                "reference": "8561c785e55a39df6cb6f95c3aba3281a60ed5b0",
                 "shasum": ""
             },
             "require": {
@@ -173,8 +121,8 @@
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Slim\\Views": ""
+                "psr-4": {
+                    "Slim\\Views\\": "./"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -183,14 +131,14 @@
             ],
             "authors": [
                 {
-                    "name": "Andrew Smith",
-                    "email": "a.smith@silentworks.co.uk",
-                    "homepage": "http://thoughts.silentworks.co.uk/"
-                },
-                {
                     "name": "Josh Lockhart",
                     "email": "info@joshlockhart.com",
                     "homepage": "http://www.joshlockhart.com/"
+                },
+                {
+                    "name": "Andrew Smith",
+                    "email": "a.smith@silentworks.co.uk",
+                    "homepage": "http://thoughts.silentworks.co.uk/"
                 }
             ],
             "description": "Smarty and Twig View Parser package for the Slim Framework",
@@ -200,20 +148,20 @@
                 "slimphp",
                 "templating"
             ],
-            "time": "2014-04-03 16:31:27"
+            "time": "2014-12-09 23:48:51"
         },
         {
             "name": "twig/twig",
-            "version": "v1.15.1",
+            "version": "v1.18.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/fabpot/Twig.git",
-                "reference": "1fb5784662f438d7d96a541e305e28b812e2eeed"
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "4cf7464348e7f9893a93f7096a90b73722be99cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fabpot/Twig/zipball/1fb5784662f438d7d96a541e305e28b812e2eeed",
-                "reference": "1fb5784662f438d7d96a541e305e28b812e2eeed",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/4cf7464348e7f9893a93f7096a90b73722be99cf",
+                "reference": "4cf7464348e7f9893a93f7096a90b73722be99cf",
                 "shasum": ""
             },
             "require": {
@@ -222,7 +170,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.18-dev"
                 }
             },
             "autoload": {
@@ -248,7 +196,7 @@
                 },
                 {
                     "name": "Twig Team",
-                    "homepage": "https://github.com/fabpot/Twig/graphs/contributors",
+                    "homepage": "http://twig.sensiolabs.org/contributors",
                     "role": "Contributors"
                 }
             ],
@@ -257,23 +205,18 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2014-02-13 10:19:29"
+            "time": "2015-01-25 17:32:08"
         }
     ],
-    "packages-dev": [
-
-    ],
-    "aliases": [
-
-    ],
+    "packages-dev": [],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "slim/views": 20
+        "slim/views": 20,
+        "google/apiclient": 10
     },
-    "platform": [
-
-    ],
-    "platform-dev": [
-
-    ]
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
 }

@@ -1,0 +1,156 @@
+{% extends '_base.html' %}
+
+{% block head %}
+
+{{ parent() }}
+
+<a data-rel="back" data-transition="slide" data-direction="reverse" data-icon="arrow-l" class="ui-btn-left">Home</a>
+
+{% endblock %}
+
+
+{% block main %}
+
+<!--GOOGLE MAP AND CONFERENCE DATA-->
+<div class="ui-body ui-body-f">
+  <div id="map-canvas" style="height: 150px"></div>
+  <br>
+  <div style="text-align: center;">
+    <strong>{{ data.conf.name }}</strong><br>
+    <a href="http://maps.google.com/maps?q={{ data.conf.location.address | url_encode  }}">{{ data.conf.location.address }}</a><br>
+    {{ data.conf.location.name }}<br>
+    {{ data.conf.start | date('h:i a') }}
+  </div>
+</div>
+
+<!--AJAX PLACEHOLDER-->
+<div id="ajax-box"></div>
+
+<!--JAVASCRIPT-->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
+<script type="text/javascript">
+  
+  // AJAX POSTING HELPER FUNCTION
+  function checkinAjax(key, value ) {
+    
+    // check location with each request
+    // true/false to server
+    var atLocation;
+    var allLocations = remotesPolys;
+    allLocations.push(locationPoly);
+    $.each(allLocations, function(k, v) {
+      if (google.maps.geometry.poly.containsLocation(myLoc, v)) {
+        atLocation = true;
+        return false;
+      } else {
+        atLocation = 'false';
+      }
+    });
+    
+    // send location, along with additional data from button to server
+    var data = { 'at_location':atLocation };
+    data[key] = value;
+    
+    var ajax_request = $.ajax({
+      method: "POST",
+      url: "{{ base_url }}/ajax/conference/{{ data.conf.id }}",
+      data: data,
+      beforeSend: function (){
+        $.mobile.loading('show', {theme:"a", text:"Loading", textonly:false, textVisible: true});
+      }
+    });
+
+    ajax_request.done(function(html){
+      $('#ajax-box').html(html);
+      $('#ajax-box').trigger('create');
+      $.mobile.loading('hide');
+
+    });
+
+    ajax_request.fail(function( jqXHR, textStatus ) {
+      $('#ajax-box').html(textStatus);
+      $.mobile.loading('hide');
+    });
+  }  
+  
+  // MAP FUNCTIONS
+  // Geolocation success
+  function foundLocation(p) {     
+    // make Google point
+    myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+    
+    // put on map
+    var marker = new google.maps.Marker({
+      position: myLoc, 
+      map: map,
+      title: 'You are here.'
+    });
+    
+    // hide loader
+    $.mobile.loading('hide');
+    
+    // checkin
+    checkinAjax();
+  }
+  
+  // Geolocation failure
+  function noLocation() {
+    $.mobile.loading('hide');
+    $('#error').html('Geolocation not supported.');
+  }
+
+  // Convert CSV string of coords to Google Polygon
+  function coordsPoly(csv) {
+    var r = csv.split(",");
+    var coords = [
+      new google.maps.LatLng(r[0], r[1]),
+      new google.maps.LatLng(r[2], r[3]),
+      new google.maps.LatLng(r[4], r[5]),
+      new google.maps.LatLng(r[6], r[7])
+    ]; 
+    var poly = new google.maps.Polygon({
+      paths: coords
+    });
+    return poly;
+  };
+
+  // Initialize the map
+  function initializeMap() {
+    // start loader
+    $.mobile.loading('show', {theme:"a", text:"Loading", textonly:false, textVisible: true});
+    
+    // load map into #map-canvas, centered on primary location
+    var mapOptions = {
+      center: locationPoly.getPath().getAt(0),
+      zoom: 15
+    };
+
+    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+  
+    // put primary and remote locations on map
+    locationPoly.setMap(map);
+    $.each(remotesPolys, function(key, value) {
+      value.setMap(map);
+    });
+    
+    // Check for geolocation
+    navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+  }
+    
+  // VARIABLES FOR LOCATIONS
+  var map;
+  var myLoc;
+  var locationPoly = coordsPoly("{{ data.conf.primary_loc.coords }}");
+  var remotes = {{ data.conf.remotes | json_encode() | raw }};
+  var remotesPolys = [];
+  $.each(remotes, function(key, value) {
+    remotesPolys.push(coordsPoly(value.coords));
+  });
+  
+  // LOAD MAP
+  google.maps.event.addDomListener(window, 'load', initializeMap);
+    
+</script>
+
+
+{% endblock %}

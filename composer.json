@@ -4,10 +4,9 @@
         "slim/slim": "2.*",
         "slim/views": "dev-master",
         "twig/twig": "1.*",
-        "opauth/opauth": "*",
-        "opauth/google": "*"
+        "google/apiclient": "1.0.*@beta"
     },
     "autoload": {
-        "classmap": ["vendor/redbean/", "vendor/attend/"]
+        "classmap": ["vendor/redbean/"]
     }
 }

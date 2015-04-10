@@ -1,175 +1,106 @@
-{% extends 'base.html' %}
+{% extends '_base.html' %}
 
 {% block main %}
 
 <style>
-    #checkin-button   { display: none; }
-    #checkout-button  { display: none; }
-    #not-here         { display: none; }    
-
+  .progress {
+    border: 1px solid #ddd;
+    background-color: #ddd;
+    margin: 1em 0;
+    padding: 0;
+    text-align: center;
+    font-weight: 400;
+  }
+  .progress > span {
+    display: block;
+    height: 1.5em;
+    padding: 0.5em;
+  }
+  .progress::after {
+    clear: both;
+  }
+  
+  .ui-listview > li p {
+    font-size: 1em;
+  }
 </style>
 
-<!--MAP -->
-<div id="map-canvas" style="height: 300px"></div>
-
-<!--CHECKIN/OUT-->
-<div class="uk-panel uk-panel-box">
-{% if session.conf != 'none' %}     
-    <h2>{{ session.conf.day }}<br />Conference</h2>
-    <p>at {{ session.conf.location }}</p>
-    
-    <div id="checkin-button">
-        <p><a class="uk-width-1-1 uk-button uk-button-success uk-button-large">Check In</a></p>
-    </div>
- 
-    <div id="checkout-button">
-        <p><a class="uk-width-1-1 uk-button uk-button-danger uk-button-large">Check Out</a></p>
-    </div>
-    
-    <div id="not-here">
-        <p>You must be at the conference or remote location in order to check in or out.</p>
-    </div>
-    
-    <div id="messages"></div>
-
-{% else %}
-    <p><b>There is no conference today.</b></p>
+<!--TODAYS CONFERENCES-->
+{% if data.todays_conferences %}     
+<ul data-role="listview" data-inset="true">
+  <li data-role="list-divider">Today's Conferences</li>
+  {% for conf in data.todays_conferences %}
+  <li><a href="{{ base_url }}/user/conference/{{ conf.id }}" data-ajax="false" data-transition="slidefade">
+    <p>
+      <strong>{{ conf.name }}</strong><br>
+      {{ conf.location.name }}<br>
+      {{ conf.start | date('h:i a') }}
+    </p>
+  </a></li>
+  {% endfor %}
+</ul>
+<br>
 {% endif %}
+
+<!--OVERALL ATTENDANCE-->
+<div class="ui-bar ui-bar-a"><h2>Overall Attendance</h2></div>
+<div class="ui-body">
+  <div class="progress"><span data-theme="e" class="
+      {% if data.percent_attended <= 70 %} error {% endif %}
+      {% if data.percent_attended > 70 and data.percent_attended < 80 %} warning {% endif %}
+      {% if data.percent_attended >= 80 %} success {% endif %}
+    " style="width: {{ data.percent_attended }}%">{{ data.percent_attended }}%</span></div>
+  <p>You have logged {{ data.logged_user_hours }} of {{ data.total_conference_hours }} required conference hours.</p>
 </div>
 
-<br />
-
-<!--ATTENDANCE-->
-<div class="uk-panel uk-panel-box">
-    <a class="uk-width-1-1 uk-button uk-button-primary uk-button-large" href="{{ base_url }}/checkout/{{ code }}">Attendance Report</a>
+<!--REQUIRED CONFERENCE ATTENDANCE-->
+<div class="ui-bar ui-bar-a"><h2>Required Conferences</h2></div>
+<div class="ui-body">
+  <table style="width: 100%" class="table-stroke">
+    <thead>
+      <tr>
+        <th style="text-align: left">Date</th>
+        <th style="width: 50%">Title</th>
+        <th style="text-align: right">Attended</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conf in data.all_conferences %}
+      <tr>
+        <td>{{ conf.start | date('m-d-y') }}</td>
+        <td style="text-align: center">{{ conf.name }}</td>
+        <td style="text-align: right">
+          {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} / {{ conf.duration }} hrs
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
-<!--LOGOUT-->
-<br />
-
-<a href="{{ base_url }}/logout">Logout</a>
-
-<!--JAVASCRIPT-->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
-<script type="text/javascript">
-    
-    // INITIALIZE CALLBACK FUNCTION
-    // success callback after geolocation obtained
-    function initialize(p) { 
-        
-        // google maps point for users location
-        var myLoc = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
-        
-        var mapOptions = {
-          center: myLoc,
-          zoom: 16
-        };
-        
-        // load map into #map-canvas
-        var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-        
-        var marker = new google.maps.Marker({
-            position: myLoc, 
-            map: map,
-        });
-        
-        // put primary and remote locations on map
-        // globals
-        locationPoly.setMap(map);
-        remotePoly.setMap(map);
-        
-       // check if user is at primary or remote location and display appropriate controls.
-        function postLocation(l) {
-            $.post("{{ base_url }}/loc/"+l, function(data){
-                console.log("At location: "+l);
-                console.log("PHP return: " + data);   
-            });
-        }
-        
-        var checkin = {
-            status:"{{ session.user.checkin.status }}", 
-            id:"{{ session.user.checkin.id }}"
-        };
-        
-        if (google.maps.geometry.poly.containsLocation(myLoc, locationPoly)){
-            var l = postLocation("primary");
-            if (checkin.status == 'none') { $('#checkin-button').show(); }
-            if (checkin.status == 'in') { $('#checkout-button').show(); }
-        } else if (google.maps.geometry.poly.containsLocation(myLoc, remotePoly)) { 
-            var l = postLocation("remote");
-            if (checkin.status == 'none') { $('#checkin-button').show(); }
-            if (checkin.status == 'in') { $('#checkout-button').show(); }
-        } else { 
-            var l = postLocation("other");
-            $('#not-here').show();
-        };
-        
-    }
-    // INITIALIZE - END
-    
-    // Button click handlers
-    $('#checkin-button').click(function(){
-        var that = this;
-        $.post('{{ base_url }}/checkin', function(data){
-            console.log("checkin: "+data);
-            if (data.error) {
-                alert(data.error);
-                $(that).hide();
-            }
-            if (data.success) {
-                alert("Thank you for checking in!");
-                $(that).hide();
-            }
-            
-        }, 'json');
-    });
-    
-    $('#checkout-button').click(function(){
-        var that = this;
-        $.post('{{ base_url }}/checkout', function(data){
-            if (data.error) {
-                alert(data.error);
-            }
-            if (data.success) {
-                $(that).hide();
-                $("#messages").html(data.success);
-            }
-            
-        }, 'json');
-    });
-
-    // utility function to turn string of four coordinates (comma separated) into google maps polygon
-    function coordsPoly(x_string) {
-        var r = x_string.split(",");
-        var coords = [
-            new google.maps.LatLng(r[0], r[1]),
-            new google.maps.LatLng(r[2], r[3]),
-            new google.maps.LatLng(r[4], r[5]),
-            new google.maps.LatLng(r[6], r[7])
-        ]; 
-        var poly = new google.maps.Polygon({
-            paths: coords
-        });
-        return poly;
-    };
-    
-    // BOOTSTRAPPING FUNCTION THAT RUNS ON PAGE LOAD
-    // ON PAGE LOAD: check for geolocation
-    if (navigator.geolocation) {
-       
-        // google maps polys for location and remote
-        // for some reason, must be defined outside initialization funciton or null result ???
-        var locationPoly = coordsPoly("{{ session.conf.coords }}");
-        var remotePoly = coordsPoly("{{ session.conf.r_coords }}");
-        
-        // get current position, pass in success callback function that takes location as parameter
-        // intialize function contains all DOM manipulation after location obtained
-        navigator.geolocation.getCurrentPosition(initialize);             
-    
-    } else {
-        $('#map-canvas').html("Geolocation not supported");
-    }    
-
-</script>
+<!--ELECTIVE CONFERENCE ATTENDANCE-->
+<div class="ui-bar ui-bar-a"><h2>Asynchronous</h2></div>
+<div class="ui-body">
+  <table style="width: 100%" class="table-stroke">
+    <thead>
+      <tr>
+        <th style="text-align: left">Date</th>
+        <th style="width: 50%">Title</th>
+        <th style="text-align: right">Attended</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conf in data.attended_electives %}
+      <tr>
+        <td>{{ conf.start | date('m-d-y') }}</td>
+        <td style="text-align: center">{{ conf.name }}</td>
+        <td style="text-align: right">
+          {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} of {{ conf.duration }} hours
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% endblock %}
