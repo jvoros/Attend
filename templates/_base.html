@@ -6,69 +6,67 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link href="{{ base_url }}/css/uikit.almost-flat.min.css" rel="stylesheet" />
-  <link href="{{ base_url }}/css/components/progress.almost-flat.min.css" rel="stylesheet" />
+  <link href="{{ base_url }}/css/jquery.mobile.flatui.css" rel="stylesheet" />
 
   <!-- Javascript -->
   <script src="{{ base_url }}/js/jquery-1.11.1.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.js"></script>
   <script src="{{ base_url }}/js/fastclick.js"></script>
-  <script src="{{ base_url }}/js/uikit.min.js"></script>
-  
-  <style>
-    .uk-container {
-      margin: 1em 0;
-    }
-  </style>
 
 </head>
+  
+  <style>
+    .ui-body { margin-bottom: 2em; }
+    
+    .ui-listview > li:first-of-type { border-top: 0 }
+    .ui-listview > li { border-top: 5px solid white; }
+    
+    .success {
+      color: white;
+      background-color: #2ecc71;
+    }
+    
+    .warning {
+      color: white;
+      background-color: #f1c40f;
+    }
+    
+    .error {
+      color: white;
+      background-color: #c1392b;
+    }
+    
+    .info {
+      color: white;
+      background-color: #3498db;
+    }
+  
+  </style>
+  
 <body>
   
-  <nav class="uk-navbar uk-navbar-attached">
-    {% if session.user is not null %}
-    <span class="uk-navbar-brand">Hi, {{ session.user.fname }}.</span>
+  <div data-role="page">
     
-    <div class="uk-navbar-content uk-navbar-flip">
-      <a class="uk-button" href="{{ base_url }}/logout">Logout <i class="uk-icon-times"></i></a>
+    <div class="ui-bar ui-bar-a"><div data-role="header" data-theme="a" data-add-back-btn="false">
+      {% block head %}
+      
+      {% if session.user is not null %}
+      <a href="{{ base_url }}/logout" data-icon="delete" class="ui-btn-right">Logout</a>
+      {% endif %}
+      
+      <h1>Attend</h1>
+      
+      {% endblock %}
+    </div></div>
+    
+    <div data-role="content">
+      
+      {% if flash.error is not null %}<div id="error" class="error ui-body">{{ flash.error }}</div>{% endif %}
+      
+      {% block main %}{% endblock %}
     </div>
-    {% else %}
-    <span class="uk-navbar-brand">DH:Attend App</span>
-    {% endif %}
-  </nav> 
-  
-  <div class="uk-container">
-    
-    {% if flash.error is not null %}
-    <div class="uk-alert uk-alert-danger">{{ flash.error }}</div>
-    {% endif %}
-    
-    {% block main %}{% endblock %}
   
   </div>
-  
-  <!--UTILITY TO SEE SESSION VARIABLES-->
-  <div class="uk-container">
-    <br /><br />
-    <!-- This is a button toggling the modal -->
-    <button id="session-button" class="uk-button" data-uk-modal="{target:'#my-id'}">Show Session</button>
-  </div>
-    
-  <!-- This is the modal -->
-  <div id="my-id" class="uk-modal">
-      <div class="uk-modal-dialog">
-        <a class="uk-modal-close uk-close"></a>
-        <h2>Session</h2>
-        <pre id="session-data"></pre>
-      </div>
-  </div>
-
-  <script type="text/javascript">
-    $('#session-button').click(function(){
-      $.get('{{ base_url }}/getsession', function(data){
-        $('#session-data').html(JSON.stringify(data, null, 4));
-      }, 'json');
-    });    
-  </script>
-  <!--/END SESSION UTILITY-->
 
 </body>
 </html>

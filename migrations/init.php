@@ -44,26 +44,25 @@ echo "Created user <br />";
 // LOCATIONS
 $loc            = R::dispense('location');
 $loc->name      = "University of Colorado";
+$loc->address   = "12605 East 16th Ave, Aurora CO 80045";
 $loc->coords    = "39.740805,-104.843302,39.743659,-104.843366,39.743643,-104.838989,39.740986,-104.839246";
 $loc_id = R::store($loc);
 
 $loc2           = R::dispense('location');
 $loc2->name     = "Rita Bass, at Denver Health";
+$loc2->address  = "660 Bannock Street, Denver CO 80204";
 $loc2->coords   = "39.725582,-104.990845,39.724221,-104.990866,39.724188,-104.989321,39.725599,-104.989235";
 $loc2_id = R::store($loc2);
 
 $loc3           = R::dispense('location');
 $loc3->name     = "Voros House";
+$loc3->address  = "677 South Grape Street, Denver CO 80246";
 $loc3->coords   = "39.703910,-104.923371,39.703910,-104.924605,39.704488,-104.924573,39.704471,-104.923296";
 $loc3_id = R::store($loc3);
 
-$loc4           = R::dispense('location');
-$loc4->name     = "Children's Hospital";
-$loc4->coords   = "39.743428,-104.837379,39.741316,-104.837337,39.741201,-104.833174,39.743527,-104.833152";
-$loc4_id = R::store($loc4);
-
 $loc5           = R::dispense('location');
 $loc5->name     = "Denver Health, Main";
+$loc5->address  = "777 Bannock St, Denver CO 80204";
 $loc5->coords   = "39.727323,-104.990330,39.727241,-104.992862,39.729056,-104.992948,39.728908,-104.990201";
 $loc5_id = R::store($loc5);
 
@@ -98,8 +97,8 @@ $conf3_id = R::store($conf3);
 $conf4              = R::dispense('conference');
 $conf4->start       = date("Y-m-d H:i:s");
 $conf4->finish      = date("Y-m-d H:i:s", time()+7200);
-$conf4->primary_loc = $loc2;
-$conf4->sharedLocationList = [$loc, $loc3];
+$conf4->primary_loc = $loc3;
+$conf4->sharedLocationList = [$loc, $loc2];
 $conf4->name        = "Test Conference";
 $conf4->elective    = FALSE;
 $conf4_id = R::store($conf4);
