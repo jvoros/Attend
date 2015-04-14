@@ -17,29 +17,11 @@
   
   <style>
     .ui-body { margin-bottom: 2em; }
+    .ui-body-a { background-color: white; }
     
     .ui-listview > li:first-of-type { border-top: 0 }
     .ui-listview > li { border-top: 5px solid white; }
-    
-    .success {
-      color: white;
-      background-color: #2ecc71;
-    }
-    
-    .warning {
-      color: white;
-      background-color: #f1c40f;
-    }
-    
-    .error {
-      color: white;
-      background-color: #c1392b;
-    }
-    
-    .info {
-      color: white;
-      background-color: #3498db;
-    }
+    .ui-listview > li p { font-size: 1em; padding: 0.5em; }
   
   </style>
   
@@ -61,7 +43,9 @@
       </div>
     </div>
     
-    {% if session.user is not null %}<div data-role="header" data-theme="c" ><h3>{{ session.user.fname }} {{ session.user.lname }}</h3></div>{% endif %}
+    {% if session.user is not null %}
+    <div data-role="header" data-theme="c" ><h3>{{ session.user.fname }} {{ session.user.lname }}</h3></div>
+    {% endif %}
     
     <div data-role="content">
       
