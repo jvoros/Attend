@@ -22,13 +22,18 @@
   
   .ui-listview > li p {
     font-size: 1em;
+    padding: 0.5em;
+  }
+  
+  .ui-body-a {
+    background-color: white;
   }
 </style>
 
 <!--TODAYS CONFERENCES-->
-{% if data.todays_conferences %}     
+{% if data.todays_conferences %}  
+<div class="ui-bar ui-bar-b"><h2>Today's Conferences</h2></div>
 <ul data-role="listview" data-inset="true">
-  <li data-role="list-divider">Today's Conferences</li>
   {% for conf in data.todays_conferences %}
   <li><a href="{{ base_url }}/user/conference/{{ conf.id }}" data-ajax="false" data-transition="slidefade">
     <p>
@@ -44,7 +49,7 @@
 
 <!--OVERALL ATTENDANCE-->
 <div class="ui-bar ui-bar-a"><h2>Overall Attendance</h2></div>
-<div class="ui-body">
+<div class="ui-body ui-body-a">
   <div class="progress"><span data-theme="e" class="
       {% if data.percent_attended <= 70 %} error {% endif %}
       {% if data.percent_attended > 70 and data.percent_attended < 80 %} warning {% endif %}
@@ -55,7 +60,7 @@
 
 <!--REQUIRED CONFERENCE ATTENDANCE-->
 <div class="ui-bar ui-bar-a"><h2>Required Conferences</h2></div>
-<div class="ui-body">
+<div class="ui-body ui-body-a">
   <table style="width: 100%" class="table-stroke">
     <thead>
       <tr>
@@ -79,8 +84,8 @@
 </div>
 
 <!--ELECTIVE CONFERENCE ATTENDANCE-->
-<div class="ui-bar ui-bar-a"><h2>Asynchronous</h2></div>
-<div class="ui-body">
+<div class="ui-bar ui-bar-a"><h2>Elective Conferences</h2></div>
+<div class="ui-body ui-body-a">
   <table style="width: 100%" class="table-stroke">
     <thead>
       <tr>

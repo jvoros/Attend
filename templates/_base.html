@@ -47,17 +47,21 @@
   
   <div data-role="page">
     
-    <div class="ui-bar ui-bar-a"><div data-role="header" data-theme="a" data-add-back-btn="false">
-      {% block head %}
-      
-      {% if session.user is not null %}
-      <a href="{{ base_url }}/logout" data-icon="delete" class="ui-btn-right">Logout</a>
-      {% endif %}
-      
-      <h1>Attend</h1>
-      
-      {% endblock %}
-    </div></div>
+    <div class="ui-bar ui-bar-a">
+      <div data-role="header" data-theme="a" data-add-back-btn="false">
+        {% block head %}
+
+        {% if session.user is not null %}
+        <a href="{{ base_url }}/logout" data-icon="delete" class="ui-btn-right">Logout</a>
+        {% endif %}
+
+        <h1>Attend</h1>
+
+        {% endblock %}
+      </div>
+    </div>
+    
+    {% if session.user is not null %}<div data-role="header" data-theme="c" ><h3>{{ session.user.fname }} {{ session.user.lname }}</h3></div>{% endif %}
     
     <div data-role="content">
       
