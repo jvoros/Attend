@@ -35,7 +35,7 @@
 {% endif %}
 
 <!--AT LOCATION & TIME-->
-{% if session.user.at_loc == 'true' and data.timeframe == 'true' %}
+{% if data.at_loc == 'true' and data.timeframe == 'true' %}
 
 {% if data.checkin.in is empty %}
 <button id="checkin-button" data-theme="g" data-icon="flat-location">Check In</button>
@@ -46,6 +46,12 @@
 {% endif %}
 
 {% endif %}
+
+<!--
+<div class="ui-body">
+  <pre>{{ dump(session) }}</pre>
+</div>
+-->
 
 <script type="text/javascript">
   

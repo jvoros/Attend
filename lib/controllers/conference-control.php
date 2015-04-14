@@ -11,10 +11,6 @@ if((strtotime($conf->start) - time()) < 3600 && (time() - strtotime($conf->finis
   $timeframe = 'false';
 }
 
-if(isset($_POST['at_location'])) {
-  $_SESSION['user']['at_loc'] = $_POST['at_location'];
-}
-
 // Handle check-in
 if($_POST['checkin'] == 'in') {
   if (isset($checkin->in)) { 
@@ -70,8 +66,8 @@ if($_POST['cancel'] == 'out') {
 }
 
 $data = array(
-  'error'     => $error,
   'conf'      => $conf_array,
   'checkin'   => $checkin,
   'timeframe' => $timeframe,
+  'at_loc'    => $_POST['at_location']
 );
