@@ -1,0 +1,45 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+<h2>LOCATIONS</h2>
+
+<a href="{{ base_url }}/admin/location" class="uk-button">+ Add New</a>
+
+<h3>Favorites</h3>
+<ul class="uk-list uk-list-striped">
+{% for loc in faves %}
+  <li>
+    <p style="float: left"><strong>{{ loc.name }}</strong><br> {{ loc.address }}</p>
+    <div style="float: right">
+      <a href="{{ base_url }}/admin/location/{{ loc.id }}" class="uk-button uk-button-mini uk-button-primary">Edit</a>
+      <a href="{{ base_url }}/admin/location/delete/{{ loc.id }}" class="location-delete uk-button uk-button-mini uk-button-danger">Delete</a>
+    </div>
+  </li>
+{% endfor %}  
+</ul>
+
+<h3>Locations</h3>
+<ul class="uk-list uk-list-striped">
+{% for loc in locations %}
+  <li>
+    <p style="float: left"><strong>{{ loc.name }}</strong><br> {{ loc.address }}</p>
+    <div style="float: right">
+      <a href="{{ base_url }}/admin/location/{{ loc.id }}" class="uk-button uk-button-mini uk-button-primary">Edit</a>
+     <a href="{{ base_url }}/admin/location/delete/{{ loc.id }}" class="location-delete uk-button uk-button-mini uk-button-danger">Delete</a>
+    </div>
+  </li>
+{% endfor %}  
+</ul>
+
+<script>
+  $(".location-delete").click(function(e){
+    e.preventDefault();
+    var r = confirm("Delete this location?");
+    if (r == true) {
+      window.location.href = $(this).attr('href');
+    }
+  });
+</script>
+
+{% endblock %}

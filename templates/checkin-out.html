@@ -1,0 +1,29 @@
+{% extends '_conference-checkin.html' %}
+
+{% block checkin_controls %}
+
+{% if data.error %}
+<div class="error ui-body">{{ data.error }}</div>
+{% endif %}
+
+<p><a id="cancel-checkin" href="#">Cancel Check In</a></p>
+
+<button id="checkout-button" data-theme="d" data-icon="flat-checkround">Check Out</button>
+
+<script type="text/javascript">
+  
+  $('#checkout-button').click(function(e){
+    checkinAjax('action','checkout');
+  });
+  
+  $('#cancel-checkin').click(function(e){
+    e.preventDefault();
+    var m = confirm('Delete Checkout?\nThis cannot be undone.');
+    if (m == true) {    
+      checkinAjax('action','cancel-checkin');
+    }
+  });
+  
+</script>
+
+{% endblock %}

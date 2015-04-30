@@ -1,0 +1,23 @@
+{% extends '_conference-checkin.html' %}
+
+{% block checkin_controls %}
+
+{% if data.error %}
+<div class="error ui-body">{{ data.error }}</div>
+{% endif %}
+
+<p><a id="cancel-checkout" href="#">Cancel Check Out</a></p>
+
+<script type="text/javascript">
+  
+  $('#cancel-checkout').click(function(e){
+    e.preventDefault();
+    var m = confirm('Delete Checkout?\nThis cannot be undone.');
+    if (m == true) {    
+      checkinAjax('action','cancel-checkout');
+    }
+  });
+  
+</script>
+
+{% endblock %}

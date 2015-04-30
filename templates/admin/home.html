@@ -1,0 +1,18 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+<h2>Home block, baby.</h2>
+
+<h2>Future</h2>
+{% for conf in data.future_conferences %}
+<p><strong>{{ conf.name }}</strong></p>
+{% endfor %}
+
+<h2>Upcoming</h2>
+{% for conf in data.upcoming_conferences %}
+<p><strong>{{ conf.name }}</strong></p>
+{% endfor %}
+  
+
+{% endblock %}

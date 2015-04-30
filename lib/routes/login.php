@@ -1,7 +1,15 @@
 <?
-// ROUTES
-$app->get('/login', function() use($app){    
-  require_once 'lib/controllers/login.php';
+// LOGIN HANDLING ROUTES
+
+$app->get('/login', function() use($app){   
+    // handle redirect from Google with code as URL parameter
+  if (isset($_GET['code'])) {
+    $app->auth->loginUserByCode($_GET['code']);
+    $app->redirect(BASE_URL);
+  } else {
+    $authUrl = $app->auth->createAuthUrl();
+    $app->redirect($authUrl);
+  }
 });
 
 $app->get('/loginform', function() use ($app) {
@@ -10,7 +18,6 @@ $app->get('/loginform', function() use ($app) {
 
 $app->get('/logout', function () use ($app) {
   $app->flashKeep();
-  session_unset();
-  $app->client->revokeToken();
+  $app->auth->logout();
   $app->redirect(BASE_URL . '/loginform');
 });

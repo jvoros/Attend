@@ -1,0 +1,1 @@
+[] checkout time check, if checkout-checkin > conf.duration only log conf.duration

@@ -1,0 +1,16 @@
+{% extends '_conference-checkin.html' %}
+
+{% block checkin_controls %}
+
+<div id="unavailable" class="ui-body ui-body-c">
+  <p>Checkin not available at this time or location.</p>
+  <button id="update-button" data-icon="refresh" data-theme="a">Update Time/Location</button>
+</div>
+
+<script type="text/javascript"> 
+  $('#update-button').click(function(e){
+    location.reload(true);
+  });
+</script>
+
+{% endblock %}

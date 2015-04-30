@@ -1,0 +1,17 @@
+{% extends '_conference-checkin.html' %}
+
+{% block checkin_controls %}
+
+{% if data.error %}
+<div class="error ui-body">{{ data.error }}</div>
+{% endif %}
+
+<button id="checkin-button" data-theme="g" data-icon="flat-location">Check In</button>
+
+<script type="text/javascript">
+  $('#checkin-button').click(function(e){
+    checkinAjax('action','checkin');
+  });
+</script>
+
+{% endblock %}

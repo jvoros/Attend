@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Attend::Admin</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="{{ base_url }}/css/uikit.almost-flat.css" rel="stylesheet" />
+
+  <!-- Javascript -->
+  <script src="{{ base_url }}/js/jquery-1.11.1.min.js"></script>
+  <script src="{{ base_url }}/js/uikit.min.js"></script>
+
+</head>
+  
+  <style>
+    nav { margin-bottom: 1em; }
+  </style>
+  
+<body>
+  
+  <nav class="uk-navbar">
+    <a href="{{ base_url }}/admin" class="uk-navbar-brand">Attend::Admin</a>
+    <ul class="uk-navbar-nav">
+      <li><a href="{{ base_url }}/admin/locations">Locations</a></li>
+      <li><a href="{{ base_url }}/admin/conferences">Conferences</a></li>
+      <li><a href="{{ base_url }}/admin/users">Users</a></li>
+    </ul>
+  </nav>
+  
+  <div class="uk-container">
+    
+    {% if flash.error %}<div id="error" class="uk-alert uk-alert-danger">{{ flash.error }}</div>{% endif %}
+    {% if flash.message %}<div id="message" class="uk-alert">{{ flash.message }}</div>{% endif %}
+    
+    {% block main %}{% endblock %}
+
+  </div>
+  
+</body>
+</html>

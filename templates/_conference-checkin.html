@@ -1,0 +1,11 @@
+{% if data.checkin %}
+<div class="ui-body ui-body-f">
+  <p><strong>Check In:</strong> {{ data.checkin.in_time | date('h:i a') }}</p>
+  {% if data.checkin.out_time %}
+  <p><strong>Check Out:</strong> {{ data.checkin.out_time | date('h:i a') }}</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% block checkin_controls %}
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+
+<style>
+  #map-stuff    { text-align: center; }
+  #map-error, #form-status { display: none; }
+  span.lng      { margin-left: 2em; }
+  
+</style>
+
+<div class="uk-grid">
+  
+  <div id="map-stuff" class="uk-width-1-3">
+    <div id="map-canvas" style="height: 250px"></div><br>
+
+    <div id="map-error" class="uk-alert uk-alert-danger">Error</div>
+
+    <button id="update-map" class="uk-button">Update Map</button>
+  </div>
+  
+  <form class="uk-form uk-form-stacked uk-width-2-3" {% if location.id is null %}method="post"{% endif %}>
+    
+    <div id="form-status" class="uk-alert">Message</div>
+    {% for error in flash.formErrors %}
+    <div class="uk-alert uk-alert-danger">{{ error }}</div>
+    {% endfor %}
+
+    <fieldset>
+
+      <div class="uk-form-row">
+        <label class="uk-form-label">Name:</label>
+        <div class="uk-form-controls">
+          <input type="text" id="name" name="name" class="uk-form-large uk-form-width-large" value="{{ location.name }}">
+        </div>
+      </div>
+
+      <div class="uk-form-row">
+        <label class="uk-form-label">Address:</label>
+        <div class="uk-form-controls">
+          <input type="text" id="address" name="address" class="address-control uk-form-large uk-form-width-large" value="{{ location.address }}">
+        </div>
+      </div>
+
+      <div class="uk-form-row">
+        <input type="hidden" id="lat" class="uk-form-large uk-form-width-small" type="lat" name="lat" value="{{ location.lat }}">
+        <input type="hidden" id="lng" class="uk-form-large uk-form-width-small" type="lng" name="lng" value="{{ location.lng }}">
+      </div>
+
+      <div class="uk-form-row">
+        <label class="uk-form-label">Radius (in meters):</label>
+        <div class="uk-form-controls">
+          <input type="text" name="radius" id="radius" class="address-control uk-form-large uk-form-width-small" value="{{ location.radius }}">
+        </div>
+      </div>
+
+      <div class="uk-form-row">
+        <label class="uk-form-label"><input type="checkbox" name="favorite"> Favorite</label>
+      </div>
+
+      <div class="uk-form-row">
+        <button class="uk-button uk-button-primary" type="submit" id="submit">Save Location</button>
+      </div>
+
+    </fieldset>
+
+  </form>
+  
+  
+</div>
+
+
+
+<!--JAVASCRIPT-->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
+<script type="text/javascript">
+  
+  // BUTTON HANDLERS
+  $(".address-control").blur(function(){
+    codeAddress();
+  });
+  
+  $('#update-map').click(function(e){
+    e.preventDefault();
+    codeAddress();
+  });
+  
+  // Ajax form handling for update page
+  {% if location.id %}
+  $("form").submit(function(e){
+    e.preventDefault();
+    var datastring = $(this).serialize();
+    $.ajax({
+      type: {% if location.id %} "PUT" {% else %} "POST" {% endif %},
+      url: "{{ base_url }}/admin/location{% if location.id %}/{{ location.id }}{% endif %}",
+      beforeSend: function() { $("#form-status").hide(); },
+      data: datastring,
+      success: function (data) { 
+        console.log(data); 
+        $("#form-status").html(data.message);
+        if (data.status == "success") { 
+          $("#form-status").removeClass("uk-alert-danger").addClass("uk-alert-success").show();
+        } else if (data.status == "new") {
+          $("#form-status").removeClass("uk-alert-danger").addClass("uk-alert-success").show();
+          $("#submit").hide();          
+        } else {
+          $("#form-status").removeClass("uk-alert-success").addClass("uk-alert-danger").show();
+        }
+      },
+      dataType: "json"
+    });
+  });
+  {% endif %}
+  
+  // MAP FUNCTIONS
+  
+  // code address
+  function codeAddress() {
+    var address = document.getElementById("address").value;
+    geoCoder.geocode( { 'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        // update form values
+        $("#address").val(results[0].formatted_address);
+        $("#lat").val(results[0].geometry.location.lat());
+        $("#lng").val(results[0].geometry.location.lng());
+        
+        // update map
+        map.setCenter(results[0].geometry.location);
+        siteMarker.setOptions({position: results[0].geometry.location });
+        
+        var formRadius = parseInt(document.getElementById("radius").value);
+        var newRadius = formRadius > 0 ? formRadius : 150;
+        siteCircle.setOptions({radius: newRadius, center: results[0].geometry.location});
+        
+      } else {
+        $("#map-error").html("Geocode was not successful for the following reason: " + status);
+        $("#map-error").show();
+      }
+    });
+  }
+
+  
+  // Initialize the map
+  function initializeMap() {
+    {% if location.lat %}
+    var coords = new google.maps.LatLng( {{ location.lat }}, {{ location.lng }} );
+    {% else %}
+    var coords = new google.maps.LatLng(39.7371241, -104.9853723); // CO state capitol
+    {% endif %}
+        
+    var mapOptions = {
+      center: coords,
+      zoom: 15
+    };
+    
+    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+    
+    siteMarker = new google.maps.Marker({
+      position: coords, 
+      map: map,
+    });
+    
+    var initRadius = {% if location.radius is not empty %} {{ location.radius }} {% else %} 150 {% endif %};
+    var circleOptions = {
+      strokeColor: '#FF0000',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: '#FF0000',
+      fillOpacity: 0.35,
+      center: coords,
+      radius: initRadius,
+      map: map
+    }
+    
+    siteCircle = new google.maps.Circle(circleOptions);
+    
+    geoCoder = new google.maps.Geocoder();
+
+  };
+  
+  // INITIALIZE GLOBALS
+  var map;
+  var siteMarker;
+  var siteCircle;
+  var geoCoder;
+  
+  // LOAD MAP
+  google.maps.event.addDomListener(window, 'load', initializeMap);
+    
+</script>
+
+{% endblock %}

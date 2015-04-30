@@ -16,8 +16,8 @@ R::setup('sqlite:dbase.sqlite');
 R::freeze(true);
 
 // app wide utility functions and constants
-// also defined in app.js 
 define('BASE_URL', 'http://localhost/Sites/DHREM/Attend'); 
+//define('BASE_URL', 'http://www.denverem.org/attend'); 
 
 
 /*********************************
@@ -45,28 +45,28 @@ $twig->addGlobal('base_url', BASE_URL);
 $twig->addGlobal('session', $_SESSION);
 $twig->addExtension(new \Twig_Extension_Debug());
 
-// Google PHP Library
-$client = new Google_Client();
-$client->setApplicationName('Attend');
-$client->setClientId('459801839286-j103ceme00kacpbrk19nihn7r3l2icme.apps.googleusercontent.com');
-$client->setClientSecret('C95vXMePXkVXKgtuQr8lWCqk');
-$client->setRedirectUri(BASE_URL . '/login');
-$client->setScopes(array(
-  'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/userinfo.profile',
-));
-$app->client = $client;
+// Model services
+$app->userService     = new \JV\UserService();
+$app->confService     = new \JV\ConfService();
+$app->checkinService  = new \JV\CheckinService($app->userService, $app->confService);
+$app->reportService   = new \JV\ReportService($app->userService, $app->confService, $app->checkinService);
 
-/*********************************
-    UTILITY FUNCTIONS
-*********************************/
+// Auth handling
+$googleClientParams = array(
+  'client_id'       => '459801839286-j103ceme00kacpbrk19nihn7r3l2icme.apps.googleusercontent.com',
+  'client_secret'   => 'C95vXMePXkVXKgtuQr8lWCqk',
+  'redirect_uri'    => BASE_URL . '/login',
+);
 
-require 'lib/utilityFunctions.php';
+$app->auth = new \JV\Auth($app, $app->userService, $googleClientParams);
+
 
 /*********************************
     ROUTES
 *********************************/
 
+// Routes act as views, managing data from Model services
+// include all route files
 $routeFiles = (array) glob('lib/routes/*.php');
 foreach($routeFiles as $routeFile) {
     require_once $routeFile;
@@ -74,11 +74,30 @@ foreach($routeFiles as $routeFile) {
 
 // TEST ROUTES
 
-$app->get('/getsession', function() use ($app) {
-  header("Content-Type: application/json");
-  echo json_encode($_SESSION);
+$app->get('/test', function() use($app) {
+  $confs = $app->confService->getConferencesByDateRange('2015-04-01', '2016-01-01');
+  foreach ($confs as $conf) {
+    $start = date('Y-m-d', strtotime($conf->start));
+    echo "<p><b>". $conf->name ."</b> on ". $start ."</p>";
+  }
+  
+  $checkins = $app->checkinService->getCheckinsForUserByDateRange(1, '2015-01-01', '2016-01-01');
+  echo "<b>Checkins</b>";
+  foreach($checkins as $checkin) {
+    $in = date('Y-m-d', strtotime($checkin->in_time));
+    echo "<p>User_id: ". $checkin->user_id .". In: ". $in ."</p>";
+  }
+  
+  $report = $app->reportService->userAttendanceByDate(1, '2015-01-01', '2016-01-01');
+  echo "<b>Report</b><br>";
+  echo "Required hours: ".$report['required_hours']."<br>";
+  echo "Checkins: <br><pre>";
+  echo print_r($report['checkins'], true);
+  echo "</pre>";
+  echo "Electives: <br><pre>";
+  echo print_r($report['user_electives'], true);
+  echo "</pre>";
 });
-
 /*********************************
     RUN
 *********************************/

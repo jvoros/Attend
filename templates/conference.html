@@ -37,7 +37,7 @@
     var atLocation;
     $.each(allCircles, function(k, v) {
       if (v.getBounds().contains(currentLocation)) {
-        atLocation = true;
+        atLocation = 'true';
         return false;
       } else {
         atLocation = 'false';
@@ -50,9 +50,11 @@
     
     var ajax_request = $.ajax({
       method: "POST",
-      url: "{{ base_url }}/ajax/conference/{{ data.conf.id }}",
+      url: "{{ base_url }}/checkin/{{ data.conf.id }}/{{ session.user.id }}",
       data: data,
       beforeSend: function (){
+        console.log("Sending data...");
+        console.log(data);
         $.mobile.loading('show', {theme:"a", text:"Loading", textonly:false, textVisible: true});
       }
     });
