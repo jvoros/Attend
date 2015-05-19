@@ -54,10 +54,13 @@ $app->reportService   = new \JV\ReportService($app->userService, $app->confServi
 $app->locationService = new \JV\LocationService();
 $app->configService   = new \JV\ConfigService();
 
+// Config params
+$app->configs = include('config.php');
+
 // Auth handling
 $googleClientParams = array(
-  'client_id'       => '',
-  'client_secret'   => '',
+  'client_id'       => $app->configs['google_client_id'],
+  'client_secret'   => $app->configs['google_client_secret'],
   'redirect_uri'    => BASE_URL . '/login',
 );
 
