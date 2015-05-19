@@ -20,7 +20,7 @@
     <button id="update-map" class="uk-button">Update Map</button>
   </div>
   
-  <form class="uk-form uk-form-stacked uk-width-2-3" {% if location.id is null %}method="post"{% endif %}>
+  <form id="location-form" class="uk-form uk-form-stacked uk-width-2-3" method="post">
     
     <div id="form-status" class="uk-alert">Message</div>
     {% for error in flash.formErrors %}
@@ -30,16 +30,16 @@
     <fieldset>
 
       <div class="uk-form-row">
-        <label class="uk-form-label">Name:</label>
+        <label for="name" class="uk-form-label">Name: (required)</label>
         <div class="uk-form-controls">
-          <input type="text" id="name" name="name" class="uk-form-large uk-form-width-large" value="{{ location.name }}">
+          <input type="text" id="name" name="name" class="uk-form-large uk-form-width-large" value="{{ location.name }}" minlength="2" type="text" required>
         </div>
       </div>
 
       <div class="uk-form-row">
-        <label class="uk-form-label">Address:</label>
+        <label class="uk-form-label">Address: (required)</label>
         <div class="uk-form-controls">
-          <input type="text" id="address" name="address" class="address-control uk-form-large uk-form-width-large" value="{{ location.address }}">
+          <input type="text" id="address" name="address" class="address-control uk-form-large uk-form-width-large" value="{{ location.address }}" minlength="2" type="text" required>
         </div>
       </div>
 
@@ -49,15 +49,17 @@
       </div>
 
       <div class="uk-form-row">
-        <label class="uk-form-label">Radius (in meters):</label>
+        <label class="uk-form-label">Radius, in meters: (required)</label>
         <div class="uk-form-controls">
-          <input type="text" name="radius" id="radius" class="address-control uk-form-large uk-form-width-small" value="{{ location.radius }}">
+          <input type="text" name="radius" id="radius" class="address-control uk-form-large uk-form-width-small" value="{{ location.radius }}" type="number">
         </div>
       </div>
 
       <div class="uk-form-row">
         <label class="uk-form-label"><input type="checkbox" name="favorite"> Favorite</label>
       </div>
+      
+      <input type="hidden" name="id" value="{{ location.id }}">
 
       <div class="uk-form-row">
         <button class="uk-button uk-button-primary" type="submit" id="submit">Save Location</button>
@@ -73,8 +75,11 @@
 
 
 <!--JAVASCRIPT-->
+<script type="text/javascript" src="{{ base_url }}/js/jquery.validate.min.js"></script>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDodj1oiPE4rns72bKYA0zPMmzJ6RXc1R4&sensor=FALSE"></script>
 <script type="text/javascript">
+  
+  //$("#location-form").validate();
   
   // BUTTON HANDLERS
   $(".address-control").blur(function(){
@@ -87,12 +92,12 @@
   });
   
   // Ajax form handling for update page
-  {% if location.id %}
+  {% if location.blah %}
   $("form").submit(function(e){
     e.preventDefault();
     var datastring = $(this).serialize();
     $.ajax({
-      type: {% if location.id %} "PUT" {% else %} "POST" {% endif %},
+      type: "POST",
       url: "{{ base_url }}/admin/location{% if location.id %}/{{ location.id }}{% endif %}",
       beforeSend: function() { $("#form-status").hide(); },
       data: datastring,

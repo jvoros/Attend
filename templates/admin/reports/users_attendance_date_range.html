@@ -1,0 +1,102 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+<style>
+  .user-report > div {
+    margin: 1em 0;
+  }
+  
+  .user-report-title {
+    border-bottom: 2px solid black;
+  }
+  
+  .user-report-section {
+    border: 2px solid lightgray;
+    padding: 1em;
+  }
+  
+  
+</style>
+
+<p class="uk-h2"><span class="uk-h1">Users Attendance by Date Range</span><br />{{ start | date('Y-m-d') }} to {{ end | date('Y-m-d') }}</p>
+
+{% if userList is empty %}
+<h3>No users match the criteria.</h3>
+{% endif %}
+
+{% for user in userList %}
+<div class="user-report uk-width-2-3" style="padding: 1em;">
+  
+  <div class="user-report-title">
+    <span class="uk-h2">{{ user.lname }}, {{ user.fname }}</span> ({{ user.email }})
+  </div>
+  
+  <div class="user-report-section">
+    <h3>Overall Attendance:</h3>
+    <div class="uk-progress 
+        {% if user.report.percent_attended <= 70 %} uk-progress-danger{% endif %}
+        {% if user.report.percent_attended > 70 and user.report.percent_attended < 80 %} uk-progress-warning{% endif %}
+        {% if user.report.percent_attended >= 80 %} uk-progress-success{% endif %}">
+      <div style="width: {{ user.report.percent_attended }}%;" class="uk-progress-bar">{{ user.report.percent_attended }}%</div>
+    </div>
+    <div>Attended: {{ user.report.total_attended }} hours / Required: {{ user.report.required_hours }} hours</div>
+  </div>
+  
+  <div class="user-report-section">
+    <h3 class="uk-strong">Required Attendance</h3>
+    <table class="uk-table">
+      <thead class="uk-text-left">
+        <tr>
+          <th>Date</th>
+          <th>Title</th>
+          <th>Attended</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for conf in user.report.required_conferences %}
+        <tr >
+          <td>{{ conf.start | date('m-d-y') }}</td>
+          <td>{{ conf.name }}</td>
+          <td>
+            {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} / {{ conf.duration }} hrs
+          </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+  </div>
+  
+  <div class="user-report-section">
+    <h3>Elective Attendance</h3>
+    <table class="uk-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Attended</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conf in user.report.user_electives %}
+      <tr>
+        <td>{{ conf.start | date('m-d-y') }}</td>
+        <td>{{ conf.name }}</td>
+        <td>
+          {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} of {{ conf.duration }} hours
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  
+</div>
+{% endfor %}
+
+
+
+
+<!--JAVASCRIPT-->
+
+{% endblock %}

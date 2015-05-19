@@ -1,0 +1,98 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+
+<style>
+
+</style>
+
+<form id="conference-form" class="uk-form uk-form-horizontal" method="post">
+  {% for error in flash.formErrors %}
+  <div class="uk-alert uk-alert-danger">{{ error }}</div>
+  {% endfor %}
+  
+  <fieldset>
+    
+    <div class="uk-form-row">
+      <label for="name" class="uk-form-label">Name: </label>
+      <div class="uk-form-controls">
+        <input type="text" id="name" name="name" class="uk-form-large uk-form-width-large" value="{{ conference.name }}" />
+      </div>
+    </div>
+    
+    <div class="uk-form-row">
+      <label for="date" class="uk-form-label">Date: </label>
+      <div class="uk-form-controls uk-form-controls-text">
+        <input type="text"  class="uk-form-large uk-form-width-small" id="date" name="date"
+               data-uk-datepicker="{format:'YYYY-MM-DD'}" value="{{ conference.start | date('Y-m-d') }}">
+         Start: 
+        <input type="text" id="start_time" name="start_time" class="uk-form-large uk-form-width-small" data-uk-timepicker value="{{ conference.start | date('H:i:s') }}">
+        End: 
+        <input type="text" id="end_time" name="end_time" class="uk-form-large uk-form-width-small" data-uk-timepicker value="{{ conference.finish | date('H:i:s') }}">
+      </div>
+    </div>
+    
+    <div class="uk-form-row">
+      <label for="location" class="uk-form-label">Location: </label>
+      <div class="uk-form-controls">
+        <select name="location_primary">
+          {% for loc in faves %}
+            <option  value="{{ loc.id }}" {% if conference.location.id is same as(loc.id) %} selected="selected" {% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+            <option>---</option>          
+          {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if conference.location.id is same as(loc.id) %} selected="selected" {% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+<!--
+    <div class="uk-form-row">
+      <label for="location" class="uk-form-label">Remote Location: </label>
+      <div class="uk-form-controls">
+        <select name="location_remote">
+          {% for loc in faves %}
+            <option value="{{ loc.id }}" {% if conference.location.id is same as(loc.id) %} selected="selected" {% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+            <option>---</option>          
+          {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if conference.location.id is same as(loc.id) %} selected="selected" {% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+-->
+    
+    <div class="uk-form-row">
+      <div class="uk-form-controls uk-form-text">
+        <label class="uk-form-label"><input type="checkbox" name="elective" {% if conference.elective %}checked{%  endif %}> Elective?</label>  
+      </div>
+    </div>
+    
+    <div class="uk-form-row">
+      <label>Comments:</label>
+      <div class="uk-form-controls uk-form-text">
+        <textarea cols="100" rows="10" name="comments">{{ conference.comments }}</textarea> 
+      </div>
+    </div>
+
+    <div class="uk-form-row">
+      <div class="uk-form-controls">
+        <button class="uk-button uk-button-primary" type="submit" id="submit">Save Conference</button>
+      </div>
+    </div>
+    
+    <input type="hidden" name="id" value="{{ conference.id }}">
+     
+  </fieldset>
+
+</form>
+
+
+
+
+<!--JAVASCRIPT-->
+
+{% endblock %}

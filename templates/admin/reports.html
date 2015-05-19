@@ -1,0 +1,19 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+<h2>REPORTS</h2>
+
+<hr>
+
+<h3>Users Attendance for Date Range</h3>
+
+<form id="location-form" class="uk-form" action="{{ base_url }}/admin/reports/users_attendance_date_range" method="get">
+  <label>Start Date:</label> <input type="text" class="uk-form-width-small" data-uk-datepicker="{format:'YYYY-MM-DD'}" name="start" id="start" value="{{ default_start | date('Y-m-d') }}" />
+  <label>End Date:</label> <input type="text" class="uk-form-width-small" data-uk-datepicker="{format:'YYYY-MM-DD'}" name="end" id="end" value="{{ default_end | date('Y-m-d') }}" />
+  <button class="uk-button uk-button-primary" type="submit" id="submit">Run Report</button>
+</form>
+
+<hr>
+
+{% endblock %}

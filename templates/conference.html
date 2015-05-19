@@ -20,6 +20,7 @@
     <a href="http://maps.google.com/maps?q={{ data.conf.location.address | url_encode  }}">{{ data.conf.location.address }}</a><br>
     {{ data.conf.location.name }}<br>
     {{ data.conf.start | date('h:i a') }}
+    <p>{{ data.conf.comments | raw | nl2br }}</p>
   </div>
 </div>
 
@@ -144,9 +145,9 @@
   // VARIABLES FOR LOCATIONS
   var allCircles = [];
   var allLocations = [{ lat: {{ data.conf.location.lat }}, lng: {{ data.conf.location.lng }}}];
-  {% for loc in data.conf.remotes %}
+  {% if data.conf.remotes[0].id %}{% for loc in data.conf.remotes %}
   allLocations.push({ lat: {{ loc.lat }}, lng: {{ loc.lng }} });
-  {% endfor %}
+  {% endfor %}{% endif %}
   
   // LOAD MAP
   google.maps.event.addDomListener(window, 'load', initializeMap);

@@ -3,10 +3,15 @@
 
 // HOME
 $app->get('/', $app->auth->verifyLogin(), function() use($app) {
+  $default_start = $app->configService->getConfig('start_date');
+  $default_end = $app->configService->getConfig('end_date');
+  
   $todaysConferences = $app->confService->getConferencesByDate(date("Y-m-d"));
-  $report = $app->reportService->userAttendanceByDate($app->auth->getUserID(), '2015-01-01', '2016-01-01');
+  $upcomingConferences = $app->confService->getUpcomingConferences();
+  $report = $app->reportService->userAttendanceByDate($app->auth->getUserID(), $default_start, date("Y-m-d"));
   $data = array(
     'todays_conferences' => $todaysConferences,
+    'upcoming_conferences' => $upcomingConferences,
     'report' => $report
   );
   $app->render('home.html', array('data' => $data));

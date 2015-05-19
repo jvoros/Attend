@@ -26,6 +26,7 @@ define('BASE_URL', 'http://localhost/Sites/DHREM/Attend');
 
 $app = new \Slim\Slim(array(
     'templates.path' => 'templates',
+    'debug' => true
 ));
 
 // prepare Twig view
@@ -50,11 +51,13 @@ $app->userService     = new \JV\UserService();
 $app->confService     = new \JV\ConfService();
 $app->checkinService  = new \JV\CheckinService($app->userService, $app->confService);
 $app->reportService   = new \JV\ReportService($app->userService, $app->confService, $app->checkinService);
+$app->locationService = new \JV\LocationService();
+$app->configService   = new \JV\ConfigService();
 
 // Auth handling
 $googleClientParams = array(
-  'client_id'       => '459801839286-j103ceme00kacpbrk19nihn7r3l2icme.apps.googleusercontent.com',
-  'client_secret'   => 'C95vXMePXkVXKgtuQr8lWCqk',
+  'client_id'       => '',
+  'client_secret'   => '',
   'redirect_uri'    => BASE_URL . '/login',
 );
 
@@ -74,30 +77,6 @@ foreach($routeFiles as $routeFile) {
 
 // TEST ROUTES
 
-$app->get('/test', function() use($app) {
-  $confs = $app->confService->getConferencesByDateRange('2015-04-01', '2016-01-01');
-  foreach ($confs as $conf) {
-    $start = date('Y-m-d', strtotime($conf->start));
-    echo "<p><b>". $conf->name ."</b> on ". $start ."</p>";
-  }
-  
-  $checkins = $app->checkinService->getCheckinsForUserByDateRange(1, '2015-01-01', '2016-01-01');
-  echo "<b>Checkins</b>";
-  foreach($checkins as $checkin) {
-    $in = date('Y-m-d', strtotime($checkin->in_time));
-    echo "<p>User_id: ". $checkin->user_id .". In: ". $in ."</p>";
-  }
-  
-  $report = $app->reportService->userAttendanceByDate(1, '2015-01-01', '2016-01-01');
-  echo "<b>Report</b><br>";
-  echo "Required hours: ".$report['required_hours']."<br>";
-  echo "Checkins: <br><pre>";
-  echo print_r($report['checkins'], true);
-  echo "</pre>";
-  echo "Electives: <br><pre>";
-  echo print_r($report['user_electives'], true);
-  echo "</pre>";
-});
 /*********************************
     RUN
 *********************************/

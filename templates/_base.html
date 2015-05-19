@@ -19,12 +19,16 @@
     .ui-body { margin-bottom: 2em; }
     .ui-body-a { background-color: white; }
     
+    .ui-body-a .ui-link:visited { color: #2c3e50; }
+    
     .ui-listview > li:first-of-type { border-top: 0 }
     .ui-listview > li { border-top: 5px solid white; }
     .ui-listview > li p { font-size: 1em; padding: 0.5em; }
     .ui-listview > li a { text-decoration: none; }
     
-     .success {
+    #checkin-button, #checkout-button { text-decoration: none; }
+    
+    .success {
       color: white;
       background-color: #2ecc71;
     }
@@ -65,7 +69,10 @@
     </div>
     
     {% if session.user is not null %}
-    <div data-role="header" data-theme="c" ><h3>{{ session.user.fname }} {{ session.user.lname }}</h3></div>
+    <div data-role="header" data-theme="c" >
+      <h3>{{ session.user.fname }} {{ session.user.lname }}</h3>
+      {% if session.user.role_name == 'admin' %}<a href="{{ base_url }}/admin" data-ajax="false" >Admin Panel</a>{% endif %}
+    </div>
     {% endif %}
     
     <div data-role="content">

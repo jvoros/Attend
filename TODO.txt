@@ -1,1 +1,3 @@
-[] checkout time check, if checkout-checkin > conf.duration only log conf.duration
+[x] checkout time check, if checkout - checkin > conf.duration only log conf.duration
+[x] location PUT response handling
+[] font awesome at /fonts

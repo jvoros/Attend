@@ -78,12 +78,15 @@ class CheckinService
   {
     $response = array();
     $checkin = $this->getCheckinForConfUser($conf_id, $user_id);
+    $conf = $this->confService->getConferenceByID($conf_id);
     if(isset($checkin->out_time)) {
       $response['error'] = "You have already checked out for this conference.";
     } elseif (!isset($checkin->in_time)) {
-      $resopnse['error'] = "You must check in before you check out.";
+      $response['error'] = "You must check in before you check out.";
     } else {
       $checkin->out_time = date('Y-m-d H:i:s');
+      $total_time = round((strtotime($checkin->out_time) - strtotime($checkin->in_time))/3600, 2);
+      $checkin->total = ($total_time > $conf->duration ? $conf->duration : $total_time);
       $checkin_id = R::store($checkin);
       if($checkin_id) {
         $response['checkin'] = $checkin;

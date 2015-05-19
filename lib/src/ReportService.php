@@ -22,6 +22,16 @@ class ReportService
     $this->checkinService   = $checkinService;
   }
 
+  
+  public function userListAttendanceByDate($userList, $start, $end)
+  {
+    foreach($userList as $user) {
+      $user->report = $this->userAttendanceByDate($user->id, $start, $end);
+    }
+    
+    return $userList;
+  }
+  
   public function userAttendanceByDate($user_id, $start, $end)
   {    
     // variables to be returned
@@ -44,7 +54,7 @@ class ReportService
         $required_hours += round((strtotime($conf->finish) - strtotime($conf->start))/3600, 2);
       }
       // all user-attended elective conferences and user's attended time
-      if ($conf->elective == true && !empty($checkins[$conf->id])) {
+      if ($conf->elective == true && !empty($checkins[$conf->id]->out_time)) {
         $time_logged = round((strtotime($checkins[$conf->id]['out_time']) - strtotime($checkins[$conf->id]['in_time']))/3600, 2);
         $time_logged = ($time_logged > $conf->duration ? $conf->duration : $time_logged);
         $checkins[$conf->id]['total'] = $time_logged;
@@ -57,14 +67,20 @@ class ReportService
     // match checkins to required conferences and tally user's attended time
     foreach($required_conferences as $conf) {
       $conf->checkin = $checkins[$conf->id];
-      $time_logged = round((strtotime($checkins[$conf->id]['out_time']) - strtotime($checkins[$conf->id]['in_time']))/3600, 2);
-      $time_logged = ($time_logged > $conf->duration ? $conf->duration : $time_logged);
-      if (isset($checkins[$conf->id])) { $checkins[$conf->id]['total'] = $time_logged; }
-      $required_attended += $time_logged;
+      if(!empty($checkins[$conf->id]->out_time)) {
+        $time_logged = round((strtotime($checkins[$conf->id]['out_time']) - strtotime($checkins[$conf->id]['in_time']))/3600, 2);
+        $time_logged = ($time_logged > $conf->duration ? $conf->duration : $time_logged);
+        $checkins[$conf->id]['total'] = $time_logged;
+        $required_attended += $time_logged;
+      }
     }
     
     $total_attended = $required_attended + $user_electives_attended;
-    $percent_attended = round($total_attended/$required_hours, 2) * 100;
+    if($required_hours) {
+      $percent_attended = round($total_attended/$required_hours, 2) * 100;
+    } else {
+      $percent_attended = 0;
+    }
     
     $report = array(
       'required_conferences'    => $required_conferences,

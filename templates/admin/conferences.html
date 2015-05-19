@@ -1,0 +1,39 @@
+{% extends 'admin/_base.html' %}
+
+{% block main %}
+
+<h2>CONFERENCES</h2>
+
+<a href="{{ base_url }}/admin/conference" class="uk-button">+ Add New</a>
+
+<h3>Conferences</h3>
+
+<form id="location-form" class="uk-form" method="post">
+  <label>Start Date:</label> <input type="text" class="uk-form-width-small" name="start" id="start" value="{{ start_date }}" />
+  <label>End Date:</label> <input type="text" class="uk-form-width-small" name="end" id="end" value="{{ end_date }}" />
+  <button class="uk-button uk-button-primary" type="submit" id="submit">Update Date</button>
+</form>
+
+<ul class="uk-list uk-list-striped">
+{% for conf in conferences %}
+  <li>
+    <p style="float: left"><strong>{{ conf.name }}</strong><br> {{ conf.start }}</p>
+    <div style="float: right">
+      <a href="{{ base_url }}/admin/conference/{{ conf.id }}" class="uk-button uk-button-mini uk-button-primary">Edit</a>
+      <a href="{{ base_url }}/admin/conference/delete/{{ conf.id }}" class="location-delete uk-button uk-button-mini uk-button-danger">Delete</a>
+    </div>
+  </li>
+{% endfor %}  
+</ul>
+
+<script>
+  $(".location-delete").click(function(e){
+    e.preventDefault();
+    var r = confirm("Delete this conference?");
+    if (r == true) {
+      window.location.href = $(this).attr('href');
+    }
+  });
+</script>
+
+{% endblock %}

@@ -29,4 +29,10 @@ class UserService
     return $user;
   }
   
+  public function findUserListByDateRange($start, $end)
+  {
+    $userList = R::find('user', ' last >= :start AND last <= :end ORDER BY lname ASC ', array(':start' => $start, ':end' => $end));
+    return $userList;
+  }
+  
 }

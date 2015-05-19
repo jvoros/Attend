@@ -1,15 +1,29 @@
 <?
-// script to load initial data into database
-
-date_default_timezone_set('America/Denver');
-require '../vendor/autoload.php';
-
-// initialize RedBean
-R::setup('sqlite:../dbase.sqlite');
+echo "<h1>Init Migration</h1>";
 
 // emtpy old database
 R::nuke();
 echo "Nuked old dbase<br />";
+
+// APP SETTINGS
+$year   = date("Y");
+$month  = date("m");
+
+$year = ((12 - $month < 6) ? $year : $year - 1 );
+$yearplus = $year + 1;
+
+$settings = array(
+  'start_date'  => $year . "-07-01",
+  'end_date'    => $yearplus . "-06-30"
+);
+
+foreach ($settings as $k => $v) {
+  $config = R::dispense('config');
+  $config->name = $k;
+  $config->value = $v;
+  $config_id = R::store($config);
+}
+echo "Updated settings<br />";
 
 // ROLES
 $role_admin       = R::dispense('role');
@@ -137,7 +151,7 @@ $check->conference  = $conf;
 $check->user        = $user;
 $check->in_time     = '2015-01-04 07:32:12';
 $check->out_time    = '2015-01-04 11:47:12';
-$check->total       = round((strtotime($check->out) - strtotime($check->in)) / 3600, 2);
+$check->total       = round((strtotime($check->out_time) - strtotime($check->in_time)) / 3600, 2);
 $check_id = R::store($check);
 
 $check2              = R::dispense('checkin');
@@ -145,7 +159,7 @@ $check2->conference  = $conf;
 $check2->user        = $admin;
 $check2->in_time     = '2015-01-04 07:30:12';
 $check2->out_time    = '2015-01-04 10:15:12';
-$check2->total       = round((strtotime($check2->out) - strtotime($check2->in)) / 3600, 2);
+$check2->total       = round((strtotime($check2->out_time) - strtotime($check2->in_time)) / 3600, 2);
 $check2_id = R::store($check2);
 
 $check3              = R::dispense('checkin');
@@ -153,7 +167,7 @@ $check3->conference  = $conf3;
 $check3->user        = $user;
 $check3->in_time     = '2015-03-06 07:32:12';
 $check3->out_time    = '2015-03-06 9:52:47';
-$check3->total       = round((strtotime($check3->out) - strtotime($check3->in)) / 3600, 2);
+$check3->total       = round((strtotime($check3->out_time) - strtotime($check3->in_time)) / 3600, 2);
 $check3_id = R::store($check3);
 
 echo "Created checkin with user and conference <br />";

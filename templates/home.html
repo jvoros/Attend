@@ -40,12 +40,29 @@
 <br>
 {% endif %}
 
+<!--UPCOMING CONFERENCES-->
+{% if data.upcoming_conferences %}  
+<div class="ui-bar ui-bar-b"><h2>Upcoming Conferences</h2></div>
+<ul data-role="listview" data-inset="true">
+  {% for conf in data.upcoming_conferences %}
+  <li><a href="{{ base_url }}/conference/{{ conf.id }}" data-ajax="false" data-transition="slidefade">
+    <p>
+      <strong>{{ conf.name }}</strong><br>
+      {{ conf.location.name }}<br>
+      {{ conf.start | date('m/d - h:i a') }}
+    </p>
+  </a></li>
+  {% endfor %}
+</ul>
+<br>
+{% endif %}
+
 <!--OVERALL ATTENDANCE-->
 <div class="ui-bar ui-bar-a"><h2>Overall Attendance</h2></div>
 <div class="ui-body ui-body-a">
   <div class="progress"><span data-theme="e" class="
       {% if data.report.percent_attended <= 70 %} error {% endif %}
-      {% if data.report.percent_attended > 70 and data.percent_attended < 80 %} warning {% endif %}
+      {% if data.report.percent_attended > 70 and data.report.percent_attended < 80 %} warning {% endif %}
       {% if data.report.percent_attended >= 80 %} success {% endif %}
     " style="width: {{ data.report.percent_attended }}%">{{ data.report.percent_attended }}%</span></div>
   <p>You have logged {{ data.report.total_attended }} of {{ data.report.required_hours }} required conference hours.</p>
@@ -66,7 +83,7 @@
       {% for conf in data.report.required_conferences %}
       <tr>
         <td>{{ conf.start | date('m-d-y') }}</td>
-        <td style="text-align: center">{{ conf.name }}</td>
+        <td style="text-align: center"><a href="{{ base_url }}/conference/{{ conf.id }}" data-ajax="false" data-transition="slidefade">{{ conf.name }}</a></td>
         <td style="text-align: right">
           {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} / {{ conf.duration }} hrs
         </td>
@@ -77,6 +94,7 @@
 </div>
 
 <!--ELECTIVE CONFERENCE ATTENDANCE-->
+{% if data.report.user_electives[0].name %}
 <div class="ui-bar ui-bar-a"><h2>Elective Conferences</h2></div>
 <div class="ui-body ui-body-a">
   <table style="width: 100%" class="table-stroke">
@@ -91,7 +109,7 @@
       {% for conf in data.report.user_electives %}
       <tr>
         <td>{{ conf.start | date('m-d-y') }}</td>
-        <td style="text-align: center">{{ conf.name }}</td>
+        <td style="text-align: center"><a href="{{ base_url }}/conference/{{ conf.id }}" data-transition="slidefade">{{ conf.name }}</a></td>
         <td style="text-align: right">
           {% if conf.checkin.total is empty %} 0 {% else %} {{ conf.checkin.total }} {% endif %} of {{ conf.duration }} hours
         </td>
@@ -100,5 +118,6 @@
     </tbody>
   </table>
 </div>
+{% endif %}
 
 {% endblock %}
